@@ -5,7 +5,7 @@
 **scToolkit** is an independent project and is **not affiliated with, endorsed by, or part of the Scanpy project** or the scverse ecosystem.  
 This toolkit provides a collection of convenience and helper functions that operate **on top of Scanpy**, but it does **not** replace or modify Scanpy itself.
 
-To use scToolkit, you must have **Scanpy installed separately** (following the [installation](##Installation)).  
+To use scToolkit, you must have **Scanpy installed separately** (see the installation section for details).  
 All references to “Scanpy” in this repository are solely for the purpose of describing compatibility and required dependencies.
 
 scToolkit does **not** claim ownership of, is not derived from, and does not promote itself as an alternative or extension officially associated with the Scanpy project.  
