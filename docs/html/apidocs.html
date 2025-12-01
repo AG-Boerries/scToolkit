@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Documentation &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="scToolkit package" href="scToolkit.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#modules-included">Modules included:</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html">scToolkit package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#example-notebooks">Example Notebooks:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_notebook_list.html">Tutorial Notebooks</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/apidocs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-documentation">
+<h1>API Documentation<a class="headerlink" href="#api-documentation" title="Link to this heading"></a></h1>
+<p>See detailed module-level and function-level API in <a class="reference internal" href="scToolkit.html"><span class="doc">scToolkit package</span></a>.</p>
+<section id="modules-included">
+<h2>Modules included:<a class="headerlink" href="#modules-included" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>`sc_code`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_code.py">source</a>
+Core analysis logic — preprocessing, filtering, clustering, and automated
+downstream visualizations. Serves as the main entry point for running
+standardized workflows with robust defaults and integrated error handling.</p></li>
+<li><p><strong>`sc_config`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_config.py">source</a>
+Centralized config and parameter handling for all analysis steps. Stores
+key workflow settings (e.g., dataset name, paths, clustering options)
+in a standard dictionary structure attached to <cite>adata.uns[“config”]</cite>.
+This enables consistent parameter tracking, reproducibility, and versioning
+without relying on external schema validation libraries.</p></li>
+<li><p><strong>`sc_plots`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_plots.py">source</a>
+Unified plotting interface for UMAPs, dot plots, violins, heatmaps, ridline, density.
+Designed for consistency, with shared color handling and auto-labeling
+across all major marker and enrichment visualizations.</p></li>
+<li><p><strong>`sc_utils`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_utils.py">source</a>
+Extensive collection of general-purpose utilities for data inspection,
+stat collection, GPU setup, file system interactions, and result formatting.
+Includes helpers for safe dictionary access, object copying, marker parsing,
+random sampling, and unified path management. Central to avoiding duplication
+and ensuring consistent behavior across the entire codebase.</p></li>
+<li><p><strong>`sc_spatial`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_spatial.py">source</a>
+Support for spatial transcriptomics integration, including polygon parsing,
+FOV-based partitioning, and spatial plotting extensions.</p></li>
+<li><p><strong>`sc_legacy`</strong> — <a class="reference external" href="../../../src/scToolkit/sc_legacy.py">source</a>
+Deprecated config logic and compatibility layers used to migrate early
+versions of the framework to the modern, validated config structure.</p></li>
+<li><p><strong>`utils`</strong> — <a class="reference external" href="../../../src/scToolkit/utils.py">source</a>
+Low-level helper functions — array handling, parsing, normalization,
+and error-safe lookups.</p></li>
+<li><p><strong>`common_logger`</strong> — <a class="reference external" href="../../../src/scToolkit/common_logger.py">source</a>
+Unified logging — structured terminal output, verbosity control,
+and consistent formatting across CLI and notebook environments.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scToolkit.html">scToolkit package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#sc-code">sc_code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#key-concepts">Key Concepts:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#typical-workflow">Typical Workflow:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#summary">Summary:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.Run_all_prep_steps_clustering"><code class="docutils literal notranslate"><span class="pre">Run_all_prep_steps_clustering()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.all_filters"><code class="docutils literal notranslate"><span class="pre">all_filters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.all_filters_tagging"><code class="docutils literal notranslate"><span class="pre">all_filters_tagging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.all_qc_preprocessing"><code class="docutils literal notranslate"><span class="pre">all_qc_preprocessing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.cluster_SC_scanpy_like"><code class="docutils literal notranslate"><span class="pre">cluster_SC_scanpy_like()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.collect_n_pcs_for_variance_sums"><code class="docutils literal notranslate"><span class="pre">collect_n_pcs_for_variance_sums()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.downstream_preprocessing"><code class="docutils literal notranslate"><span class="pre">downstream_preprocessing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.get_receptor_ligand_db"><code class="docutils literal notranslate"><span class="pre">get_receptor_ligand_db()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.get_ref_db"><code class="docutils literal notranslate"><span class="pre">get_ref_db()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.hist_equalize_data"><code class="docutils literal notranslate"><span class="pre">hist_equalize_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.load_h5ad"><code class="docutils literal notranslate"><span class="pre">load_h5ad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.run_decoupler"><code class="docutils literal notranslate"><span class="pre">run_decoupler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.run_downstream"><code class="docutils literal notranslate"><span class="pre">run_downstream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.run_pca_on_subset"><code class="docutils literal notranslate"><span class="pre">run_pca_on_subset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.save_h5ad"><code class="docutils literal notranslate"><span class="pre">save_h5ad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.search_for_leiden_resolution"><code class="docutils literal notranslate"><span class="pre">search_for_leiden_resolution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.search_for_neighbor_params"><code class="docutils literal notranslate"><span class="pre">search_for_neighbor_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.set_neighbors_n_pcs"><code class="docutils literal notranslate"><span class="pre">set_neighbors_n_pcs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.setup_adata"><code class="docutils literal notranslate"><span class="pre">setup_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_code.test_logger"><code class="docutils literal notranslate"><span class="pre">test_logger()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#sc-config">sc_config</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.change_gpu_usage"><code class="docutils literal notranslate"><span class="pre">change_gpu_usage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.dataset_to_dict"><code class="docutils literal notranslate"><span class="pre">dataset_to_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict"><code class="docutils literal notranslate"><span class="pre">experiment_dict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.general"><code class="docutils literal notranslate"><span class="pre">experiment_dict.general</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.qc"><code class="docutils literal notranslate"><span class="pre">experiment_dict.qc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.downstream"><code class="docutils literal notranslate"><span class="pre">experiment_dict.downstream</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.scToolkit"><code class="docutils literal notranslate"><span class="pre">experiment_dict.scToolkit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.to_plot"><code class="docutils literal notranslate"><span class="pre">experiment_dict.to_plot</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.to_create"><code class="docutils literal notranslate"><span class="pre">experiment_dict.to_create</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.set_save_path"><code class="docutils literal notranslate"><span class="pre">experiment_dict.set_save_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.experiment_dict.sync_dict"><code class="docutils literal notranslate"><span class="pre">experiment_dict.sync_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.get_config"><code class="docutils literal notranslate"><span class="pre">get_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.get_nested_dict_keys_structure"><code class="docutils literal notranslate"><span class="pre">get_nested_dict_keys_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.get_stats"><code class="docutils literal notranslate"><span class="pre">get_stats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.search_regex_nested_dict_list"><code class="docutils literal notranslate"><span class="pre">search_regex_nested_dict_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.search_scToolkit_function_legacy"><code class="docutils literal notranslate"><span class="pre">search_scToolkit_function_legacy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.update_key_in_config"><code class="docutils literal notranslate"><span class="pre">update_key_in_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.update_nested"><code class="docutils literal notranslate"><span class="pre">update_nested()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_config.update_nested_dict"><code class="docutils literal notranslate"><span class="pre">update_nested_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#sc-plots">sc_plots</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.calc_dotplot_figsize"><code class="docutils literal notranslate"><span class="pre">calc_dotplot_figsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.calc_hierarchical_order"><code class="docutils literal notranslate"><span class="pre">calc_hierarchical_order()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.check_scoring_validity"><code class="docutils literal notranslate"><span class="pre">check_scoring_validity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.continuos_umap_helper"><code class="docutils literal notranslate"><span class="pre">continuos_umap_helper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.create_gene_dendrogram"><code class="docutils literal notranslate"><span class="pre">create_gene_dendrogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.discrete_umap_helper"><code class="docutils literal notranslate"><span class="pre">discrete_umap_helper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.get_DEGs_per_group_for_plotting"><code class="docutils literal notranslate"><span class="pre">get_DEGs_per_group_for_plotting()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.get_bandwidth"><code class="docutils literal notranslate"><span class="pre">get_bandwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.get_colormap"><code class="docutils literal notranslate"><span class="pre">get_colormap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.make_circle_segment_markers"><code class="docutils literal notranslate"><span class="pre">make_circle_segment_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_DEG_dotplot"><code class="docutils literal notranslate"><span class="pre">plot_DEG_dotplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_density_difference"><code class="docutils literal notranslate"><span class="pre">plot_density_difference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_dotplot"><code class="docutils literal notranslate"><span class="pre">plot_dotplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_embedding_density"><code class="docutils literal notranslate"><span class="pre">plot_embedding_density()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_filtering"><code class="docutils literal notranslate"><span class="pre">plot_filtering()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_group_dotplot"><code class="docutils literal notranslate"><span class="pre">plot_group_dotplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_hallmark_group_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_hallmark_group_heatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_hash_violins"><code class="docutils literal notranslate"><span class="pre">plot_hash_violins()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_heatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_hierarchical_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_hierarchical_heatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_hierarchical_heatmap_"><code class="docutils literal notranslate"><span class="pre">plot_hierarchical_heatmap_()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_hist_of_each_layer"><code class="docutils literal notranslate"><span class="pre">plot_hist_of_each_layer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_jaccard_heatmap_cluster_comparison"><code class="docutils literal notranslate"><span class="pre">plot_jaccard_heatmap_cluster_comparison()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_mediods_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_mediods_heatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_per_group_DEG_dotplot_n_gene_dendrogram"><code class="docutils literal notranslate"><span class="pre">plot_per_group_DEG_dotplot_n_gene_dendrogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_per_group_DEG_umaps"><code class="docutils literal notranslate"><span class="pre">plot_per_group_DEG_umaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_per_group_stacked_violins"><code class="docutils literal notranslate"><span class="pre">plot_per_group_stacked_violins()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_qc_scatter"><code class="docutils literal notranslate"><span class="pre">plot_qc_scatter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_qc_scatter_combinations"><code class="docutils literal notranslate"><span class="pre">plot_qc_scatter_combinations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_qc_violins"><code class="docutils literal notranslate"><span class="pre">plot_qc_violins()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_ref_dotplots"><code class="docutils literal notranslate"><span class="pre">plot_ref_dotplots()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_ref_stacked_violins"><code class="docutils literal notranslate"><span class="pre">plot_ref_stacked_violins()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_ridgeline"><code class="docutils literal notranslate"><span class="pre">plot_ridgeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_spatial"><code class="docutils literal notranslate"><span class="pre">plot_spatial()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_umap"><code class="docutils literal notranslate"><span class="pre">plot_umap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_umap_cat_splitting"><code class="docutils literal notranslate"><span class="pre">plot_umap_cat_splitting()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_umap_sbs"><code class="docutils literal notranslate"><span class="pre">plot_umap_sbs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.plot_violin"><code class="docutils literal notranslate"><span class="pre">plot_violin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.show_category_over_umap"><code class="docutils literal notranslate"><span class="pre">show_category_over_umap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.show_num_cells_and_count_per_gene"><code class="docutils literal notranslate"><span class="pre">show_num_cells_and_count_per_gene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_plots.split_title_text"><code class="docutils literal notranslate"><span class="pre">split_title_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#sc-utils">sc_utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.adata_hstack"><code class="docutils literal notranslate"><span class="pre">adata_hstack()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.adata_hstack_dict"><code class="docutils literal notranslate"><span class="pre">adata_hstack_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.adata_vstack"><code class="docutils literal notranslate"><span class="pre">adata_vstack()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.adata_vstack_dict"><code class="docutils literal notranslate"><span class="pre">adata_vstack_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.add_cell_type_idxmax_from_significant"><code class="docutils literal notranslate"><span class="pre">add_cell_type_idxmax_from_significant()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.add_layer_to_adata"><code class="docutils literal notranslate"><span class="pre">add_layer_to_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.bin_column"><code class="docutils literal notranslate"><span class="pre">bin_column()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_DEGs"><code class="docutils literal notranslate"><span class="pre">calc_DEGs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_DEGs_multi_group"><code class="docutils literal notranslate"><span class="pre">calc_DEGs_multi_group()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_clr"><code class="docutils literal notranslate"><span class="pre">calc_clr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_group_density"><code class="docutils literal notranslate"><span class="pre">calc_group_density()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_group_overlap_scores"><code class="docutils literal notranslate"><span class="pre">calc_group_overlap_scores()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_hash_features"><code class="docutils literal notranslate"><span class="pre">calc_hash_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_highly_variable_genes_unique_based"><code class="docutils literal notranslate"><span class="pre">calc_highly_variable_genes_unique_based()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.calc_top_n_ratio"><code class="docutils literal notranslate"><span class="pre">calc_top_n_ratio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.check_ct_abundances"><code class="docutils literal notranslate"><span class="pre">check_ct_abundances()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.check_group_overlap"><code class="docutils literal notranslate"><span class="pre">check_group_overlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.check_key_conflicts"><code class="docutils literal notranslate"><span class="pre">check_key_conflicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.compare_gene_expression_deltas"><code class="docutils literal notranslate"><span class="pre">compare_gene_expression_deltas()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.convert_mixed_types"><code class="docutils literal notranslate"><span class="pre">convert_mixed_types()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.convert_orthologs"><code class="docutils literal notranslate"><span class="pre">convert_orthologs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.convert_ref_dict_to_df"><code class="docutils literal notranslate"><span class="pre">convert_ref_dict_to_df()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.convert_ref_dict_to_gs_per_row"><code class="docutils literal notranslate"><span class="pre">convert_ref_dict_to_gs_per_row()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.convert_to_mem_efficient"><code class="docutils literal notranslate"><span class="pre">convert_to_mem_efficient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.count_genesets_per_group"><code class="docutils literal notranslate"><span class="pre">count_genesets_per_group()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.create_deg_table"><code class="docutils literal notranslate"><span class="pre">create_deg_table()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.create_deg_table_parallel"><code class="docutils literal notranslate"><span class="pre">create_deg_table_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.create_filter_stat_csv"><code class="docutils literal notranslate"><span class="pre">create_filter_stat_csv()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.create_group_stats_df"><code class="docutils literal notranslate"><span class="pre">create_group_stats_df()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.create_obs_range"><code class="docutils literal notranslate"><span class="pre">create_obs_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.data_frame_to_valide_ref_dict"><code class="docutils literal notranslate"><span class="pre">data_frame_to_valide_ref_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.deduplicate_ref_dict"><code class="docutils literal notranslate"><span class="pre">deduplicate_ref_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.disable_all_run_downstream"><code class="docutils literal notranslate"><span class="pre">disable_all_run_downstream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.extract_gene_to_biotype"><code class="docutils literal notranslate"><span class="pre">extract_gene_to_biotype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.filter_cells_multicall"><code class="docutils literal notranslate"><span class="pre">filter_cells_multicall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.filter_genes_multicall"><code class="docutils literal notranslate"><span class="pre">filter_genes_multicall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.filter_genes_n_families"><code class="docutils literal notranslate"><span class="pre">filter_genes_n_families()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.filter_genes_n_families_regex"><code class="docutils literal notranslate"><span class="pre">filter_genes_n_families_regex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.fix_hash_out_of_distribution"><code class="docutils literal notranslate"><span class="pre">fix_hash_out_of_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.flag_gene_family"><code class="docutils literal notranslate"><span class="pre">flag_gene_family()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_DEG_gene_csvs"><code class="docutils literal notranslate"><span class="pre">get_DEG_gene_csvs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_DEGs_per_group"><code class="docutils literal notranslate"><span class="pre">get_DEGs_per_group()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_adata_by_mod"><code class="docutils literal notranslate"><span class="pre">get_adata_by_mod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_adata_sub_keys"><code class="docutils literal notranslate"><span class="pre">get_adata_sub_keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_adata_subset"><code class="docutils literal notranslate"><span class="pre">get_adata_subset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_all_layers"><code class="docutils literal notranslate"><span class="pre">get_all_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_all_markers_from_ref_dict"><code class="docutils literal notranslate"><span class="pre">get_all_markers_from_ref_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_category_color_dict"><code class="docutils literal notranslate"><span class="pre">get_category_color_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_deg_df"><code class="docutils literal notranslate"><span class="pre">get_deg_df()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_desired_cpu_gpu_object"><code class="docutils literal notranslate"><span class="pre">get_desired_cpu_gpu_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_element_and_counts_with_positional_sum"><code class="docutils literal notranslate"><span class="pre">get_element_and_counts_with_positional_sum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_genes_sum_sorted"><code class="docutils literal notranslate"><span class="pre">get_genes_sum_sorted()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_group_hierarchy"><code class="docutils literal notranslate"><span class="pre">get_group_hierarchy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_group_key_percentages"><code class="docutils literal notranslate"><span class="pre">get_group_key_percentages()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_highly_variable"><code class="docutils literal notranslate"><span class="pre">get_highly_variable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_minimal_adata"><code class="docutils literal notranslate"><span class="pre">get_minimal_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_msigdb_df"><code class="docutils literal notranslate"><span class="pre">get_msigdb_df()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_n_unique"><code class="docutils literal notranslate"><span class="pre">get_n_unique()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_pseudobulk"><code class="docutils literal notranslate"><span class="pre">get_pseudobulk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_random_generator"><code class="docutils literal notranslate"><span class="pre">get_random_generator()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_random_genes"><code class="docutils literal notranslate"><span class="pre">get_random_genes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_random_geneset_reference"><code class="docutils literal notranslate"><span class="pre">get_random_geneset_reference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_ref_gensests"><code class="docutils literal notranslate"><span class="pre">get_ref_gensests()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_rows_cols_figsize"><code class="docutils literal notranslate"><span class="pre">get_rows_cols_figsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_save_path"><code class="docutils literal notranslate"><span class="pre">get_save_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_shape_diff"><code class="docutils literal notranslate"><span class="pre">get_shape_diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_thresholds"><code class="docutils literal notranslate"><span class="pre">get_thresholds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.get_valide_ref_dicts"><code class="docutils literal notranslate"><span class="pre">get_valide_ref_dicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.handle_key_conflicts"><code class="docutils literal notranslate"><span class="pre">handle_key_conflicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.initialize_cuda"><code class="docutils literal notranslate"><span class="pre">initialize_cuda()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.interpolate_density_to_embedding"><code class="docutils literal notranslate"><span class="pre">interpolate_density_to_embedding()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.list_overlapping_gs"><code class="docutils literal notranslate"><span class="pre">list_overlapping_gs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.map_geneset_to_degs"><code class="docutils literal notranslate"><span class="pre">map_geneset_to_degs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.mark_highly_variable_genes"><code class="docutils literal notranslate"><span class="pre">mark_highly_variable_genes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.mask_gse_by_significance_threshold"><code class="docutils literal notranslate"><span class="pre">mask_gse_by_significance_threshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.merge_for_deg"><code class="docutils literal notranslate"><span class="pre">merge_for_deg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.name_groups"><code class="docutils literal notranslate"><span class="pre">name_groups()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.our_cons"><code class="docutils literal notranslate"><span class="pre">our_cons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.parse_geneset_to_mask"><code class="docutils literal notranslate"><span class="pre">parse_geneset_to_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.process_and_save_degs"><code class="docutils literal notranslate"><span class="pre">process_and_save_degs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.ref_dict_long_value_split"><code class="docutils literal notranslate"><span class="pre">ref_dict_long_value_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.ref_dict_sort_values_hvg_like"><code class="docutils literal notranslate"><span class="pre">ref_dict_sort_values_hvg_like()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.ref_dict_to_valide_data_frame"><code class="docutils literal notranslate"><span class="pre">ref_dict_to_valide_data_frame()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.ref_to_list"><code class="docutils literal notranslate"><span class="pre">ref_to_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.rename_obs_name_suffix"><code class="docutils literal notranslate"><span class="pre">rename_obs_name_suffix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.replace_raw_by_layer"><code class="docutils literal notranslate"><span class="pre">replace_raw_by_layer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.replace_small_counts"><code class="docutils literal notranslate"><span class="pre">replace_small_counts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.run_hashsolo_and_add_results"><code class="docutils literal notranslate"><span class="pre">run_hashsolo_and_add_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.save_genesets_to_csv"><code class="docutils literal notranslate"><span class="pre">save_genesets_to_csv()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.score_genes"><code class="docutils literal notranslate"><span class="pre">score_genes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.score_genes_parallel"><code class="docutils literal notranslate"><span class="pre">score_genes_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.search_adata_keys"><code class="docutils literal notranslate"><span class="pre">search_adata_keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.search_database"><code class="docutils literal notranslate"><span class="pre">search_database()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.set_distinct_colors"><code class="docutils literal notranslate"><span class="pre">set_distinct_colors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.set_obs_from_other_adata"><code class="docutils literal notranslate"><span class="pre">set_obs_from_other_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.setup_image_folder"><code class="docutils literal notranslate"><span class="pre">setup_image_folder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.shift_qc_metrics"><code class="docutils literal notranslate"><span class="pre">shift_qc_metrics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.show_num_genes_and_count_per_cell"><code class="docutils literal notranslate"><span class="pre">show_num_genes_and_count_per_cell()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.subset_adata_random"><code class="docutils literal notranslate"><span class="pre">subset_adata_random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.subset_degs"><code class="docutils literal notranslate"><span class="pre">subset_degs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.subset_degs_by_ref"><code class="docutils literal notranslate"><span class="pre">subset_degs_by_ref()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.test_gene_normality_adata"><code class="docutils literal notranslate"><span class="pre">test_gene_normality_adata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.unmark_highly_variable_regex"><code class="docutils literal notranslate"><span class="pre">unmark_highly_variable_regex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_utils.update_grouping"><code class="docutils literal notranslate"><span class="pre">update_grouping()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#utils">utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid"><code class="docutils literal notranslate"><span class="pre">FFTGrid</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.x_max"><code class="docutils literal notranslate"><span class="pre">FFTGrid.x_max</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.x_min"><code class="docutils literal notranslate"><span class="pre">FFTGrid.x_min</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.x_scaler_co_to_gi"><code class="docutils literal notranslate"><span class="pre">FFTGrid.x_scaler_co_to_gi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.x_scaler_gi_to_co"><code class="docutils literal notranslate"><span class="pre">FFTGrid.x_scaler_gi_to_co</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.xe"><code class="docutils literal notranslate"><span class="pre">FFTGrid.xe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.xs"><code class="docutils literal notranslate"><span class="pre">FFTGrid.xs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.xx"><code class="docutils literal notranslate"><span class="pre">FFTGrid.xx</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.y_max"><code class="docutils literal notranslate"><span class="pre">FFTGrid.y_max</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.y_min"><code class="docutils literal notranslate"><span class="pre">FFTGrid.y_min</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.y_scaler_co_to_gi"><code class="docutils literal notranslate"><span class="pre">FFTGrid.y_scaler_co_to_gi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.y_scaler_gi_to_co"><code class="docutils literal notranslate"><span class="pre">FFTGrid.y_scaler_gi_to_co</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.ye"><code class="docutils literal notranslate"><span class="pre">FFTGrid.ye</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.ys"><code class="docutils literal notranslate"><span class="pre">FFTGrid.ys</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.FFTGrid.yy"><code class="docutils literal notranslate"><span class="pre">FFTGrid.yy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper"><code class="docutils literal notranslate"><span class="pre">StatKeeper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.mins"><code class="docutils literal notranslate"><span class="pre">StatKeeper.mins</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.maxs"><code class="docutils literal notranslate"><span class="pre">StatKeeper.maxs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.means"><code class="docutils literal notranslate"><span class="pre">StatKeeper.means</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.medians"><code class="docutils literal notranslate"><span class="pre">StatKeeper.medians</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.stds"><code class="docutils literal notranslate"><span class="pre">StatKeeper.stds</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.get"><code class="docutils literal notranslate"><span class="pre">StatKeeper.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.utils.StatKeeper.update"><code class="docutils literal notranslate"><span class="pre">StatKeeper.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.bilinear_interpolate_numpy"><code class="docutils literal notranslate"><span class="pre">bilinear_interpolate_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.categorically_group_equal_numba"><code class="docutils literal notranslate"><span class="pre">categorically_group_equal_numba()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.clean_byte_literal_strings"><code class="docutils literal notranslate"><span class="pre">clean_byte_literal_strings()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.clip_dataframe"><code class="docutils literal notranslate"><span class="pre">clip_dataframe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.convert_int_with_na_to_string"><code class="docutils literal notranslate"><span class="pre">convert_int_with_na_to_string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.counts_equal"><code class="docutils literal notranslate"><span class="pre">counts_equal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.create_acronym"><code class="docutils literal notranslate"><span class="pre">create_acronym()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.create_acronym_column"><code class="docutils literal notranslate"><span class="pre">create_acronym_column()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.create_unique_acronyms"><code class="docutils literal notranslate"><span class="pre">create_unique_acronyms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.determine_clip_threshold"><code class="docutils literal notranslate"><span class="pre">determine_clip_threshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.df_group_genes"><code class="docutils literal notranslate"><span class="pre">df_group_genes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.df_split_col"><code class="docutils literal notranslate"><span class="pre">df_split_col()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.ensure_unique_acronyms"><code class="docutils literal notranslate"><span class="pre">ensure_unique_acronyms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.flatten_recursive"><code class="docutils literal notranslate"><span class="pre">flatten_recursive()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_categorical_columns"><code class="docutils literal notranslate"><span class="pre">get_categorical_columns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_colors_wrapped"><code class="docutils literal notranslate"><span class="pre">get_colors_wrapped()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_duplicate_rows"><code class="docutils literal notranslate"><span class="pre">get_duplicate_rows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_fft_grid"><code class="docutils literal notranslate"><span class="pre">get_fft_grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_print_highlighter"><code class="docutils literal notranslate"><span class="pre">get_print_highlighter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_run_lengths"><code class="docutils literal notranslate"><span class="pre">get_run_lengths()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.get_subdirectories"><code class="docutils literal notranslate"><span class="pre">get_subdirectories()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.inplace_max_scale_csr"><code class="docutils literal notranslate"><span class="pre">inplace_max_scale_csr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.join_categorical_columns"><code class="docutils literal notranslate"><span class="pre">join_categorical_columns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.list_dirs"><code class="docutils literal notranslate"><span class="pre">list_dirs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.list_files"><code class="docutils literal notranslate"><span class="pre">list_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.min_max_scale_axis"><code class="docutils literal notranslate"><span class="pre">min_max_scale_axis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.min_max_scaler"><code class="docutils literal notranslate"><span class="pre">min_max_scaler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.parallel_rank"><code class="docutils literal notranslate"><span class="pre">parallel_rank()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.print_df_in_chunks"><code class="docutils literal notranslate"><span class="pre">print_df_in_chunks()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.print_stats"><code class="docutils literal notranslate"><span class="pre">print_stats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.print_stats_split"><code class="docutils literal notranslate"><span class="pre">print_stats_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.rankdata_numba"><code class="docutils literal notranslate"><span class="pre">rankdata_numba()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.remove_empty_rows_and_columns"><code class="docutils literal notranslate"><span class="pre">remove_empty_rows_and_columns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.replace_np_array_with_list_recursive"><code class="docutils literal notranslate"><span class="pre">replace_np_array_with_list_recursive()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.replace_special_chars"><code class="docutils literal notranslate"><span class="pre">replace_special_chars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.save_dataframe"><code class="docutils literal notranslate"><span class="pre">save_dataframe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.set_sparse_subset_to_zero"><code class="docutils literal notranslate"><span class="pre">set_sparse_subset_to_zero()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.set_threads"><code class="docutils literal notranslate"><span class="pre">set_threads()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.split_overlapping_groups"><code class="docutils literal notranslate"><span class="pre">split_overlapping_groups()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.utils.validate_groupby_column"><code class="docutils literal notranslate"><span class="pre">validate_groupby_column()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#common-logger">common_logger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.clear_multi_loggers"><code class="docutils literal notranslate"><span class="pre">clear_multi_loggers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.disable_logging"><code class="docutils literal notranslate"><span class="pre">disable_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.disable_most_library_logging"><code class="docutils literal notranslate"><span class="pre">disable_most_library_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.stderr_selector"><code class="docutils literal notranslate"><span class="pre">stderr_selector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.stderr_selector.filter"><code class="docutils literal notranslate"><span class="pre">stderr_selector.filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.stdout_selector"><code class="docutils literal notranslate"><span class="pre">stdout_selector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scToolkit.html#scToolkit.common_logger.stdout_selector.filter"><code class="docutils literal notranslate"><span class="pre">stdout_selector.filter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#sc-legacy">sc_legacy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_legacy.fix_old_dict"><code class="docutils literal notranslate"><span class="pre">fix_old_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_legacy.load_h5ad_old"><code class="docutils literal notranslate"><span class="pre">load_h5ad_old()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_legacy.plot_split_dotplot_mpl"><code class="docutils literal notranslate"><span class="pre">plot_split_dotplot_mpl()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.sc_legacy.save_h5ad_old"><code class="docutils literal notranslate"><span class="pre">save_h5ad_old()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#module-scToolkit.markers">markers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.markers.create_the_hg_vcf_genesets"><code class="docutils literal notranslate"><span class="pre">create_the_hg_vcf_genesets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#module-scToolkit.paths">paths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.paths.build_directory_structure"><code class="docutils literal notranslate"><span class="pre">build_directory_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.paths.create_code_structure"><code class="docutils literal notranslate"><span class="pre">create_code_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.paths.get_hgnc"><code class="docutils literal notranslate"><span class="pre">get_hgnc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.paths.get_mgi"><code class="docutils literal notranslate"><span class="pre">get_mgi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scToolkit.html#scToolkit.paths.parse_python_file"><code class="docutils literal notranslate"><span class="pre">parse_python_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scToolkit.html#module-scToolkit">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="example-notebooks">
+<h2>Example Notebooks:<a class="headerlink" href="#example-notebooks" title="Link to this heading"></a></h2>
+<p>Interactive tutorials and workflows are available in the <cite>notebooks/</cite> folder.
+These cover:
+- Full pipeline
+- basic preprocessing and clustering
+- marker visualization
+- enrichment analysis
+- showcase demos
+- spatial analysis</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scToolkit.html" class="btn btn-neutral float-right" title="scToolkit package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,135 @@
+.. scToolkit documentation master file, created by
+   sphinx-quickstart on Thu Jan  7 23:46:55 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+
+Welcome to scToolkit documentation!
+====================================
+-----------------------
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
+
+   quickstart
+   apidocs
+   run_downstream_explaination
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorial:
+
+   _notebook_list
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
+Why `scToolkit` and not Scanpy
+-------------------------------
+
+Scanpy is a widely used toolkit in single-cell analysis — but it wasn’t designed
+as a formal API. Instead, it has evolved as a flexible but loosely structured
+collection of functions, primarily tailored to the needs of computational
+biologists and small data. This approach has many benefits, but also creates
+challenges when trying to build reproducible, maintainable, and scalable pipelines.
+
+We created `scToolkit` to address these challenges — and we’re actively working
+to smooth out the rough edges. If you notice any issues like those described
+below in our codebase, please let us know so we can fix or improve them.
+We see this as building on Scanpy’s strengths rather than duplicating its challenges.
+
+
+**Missing condition-per-cluster logic (2-step comparisons)**
+
+Scanpy lacks built-in support for comparing **conditions within clusters** —
+a common task in real-world studies. There's no native way to ask:
+"Show me differentially expressed genes between treated and untreated
+*within each cell type*."
+
+Instead, users must manually:
+
+  - Subset each cluster
+  - Loop over conditions
+  - Run separate tests
+  - Merge the results
+
+This boilerplate is both error-prone and time-consuming — something we aim to
+solve natively in `scToolkit`.
+
+**Tutorials lack real-world depth**
+
+Scanpy’s tutorials are minimal and omit steps that are
+critical in collaborative or translational projects — such as:
+
+  - Paired case-control comparisons
+  - Practical best practices for real-world data, beyond minimal examples
+  - Reliable, minimal false-positive and non-inferred examples
+
+**Suboptimal or outdated defaults**
+
+Defaults like Louvain clustering or t-tests for differential expression are
+frequently not ideal for modern single-cell data:
+
+  - Louvain is less reliable than Leiden and can yield incorrect results in
+    specific cases that are likely to occure in single-cell data.
+    Small and weakly connected clique mergin results in low abundant cell type
+    mergings.
+  - T-tests assume normality, which doesn’t hold in sparse, zero-inflated data
+  - LogFC thresholding is often omitted, resulting in irrelevant hits.
+  - `use_raw=True` while the adata.raw should have been Deprecated since ever.
+    Just save the object raw and merge parts of it with the processed if necessary.
+
+We strive for safer defaults and clear documentation so users can override
+when necessary.
+
+**Defaults with hidden pitfalls**
+
+Defaults like `use_raw=True` or missing `random_state` settings can lead to
+nondeterministic behavior. These should be explicit and controlled.
+
+**Lack of structured API logic**
+
+Scanpy’s flexibility allows for many different workflows, but this can make it
+challenging to build highly structured pipelines. `scToolkit` focuses on
+providing a more uniform interface for users who prefer a predictable workflow.
+
+**Inconsistent usage patterns**
+
+Different functions use different conventions for arguments like `inplace` or
+`copy`, and return types vary. This can make it harder to reuse or compose
+functions consistently. We're working toward a unified, predictable interface.
+
+**Implicit data modifications**
+
+Some functions modify key parts of the `AnnData` object without clearly
+indicating what was changed. We'd like to ensure that changes are either
+explicitly returned or clearly documented.
+
+**Limited use of hardware acceleration**
+
+Scanpy currently performs most computations on a single CPU core, which can be
+limiting for large datasets. We aim to support multicore and GPU acceleration
+in future implementations to improve performance.
+
+
+**Impact on reproducibility**
+
+The combination of hidden state, unpredictable defaults, and undocumented
+side effects makes it hard to:
+
+  - Reproduce analyses (GPU case relys on Rapids, which is non deterministic at the moment)
+  - Track provenance
+  - Resume or checkpoint workflows
+  - Maintain trust in results over time
+
+We want `scToolkit` to avoid these problems by design.
+
+If you encounter any issues like the ones above, whether in Scanpy or in
+our own implementation, please report them. We want `scToolkit` to be a
+reliable foundation — not just a wrapper.

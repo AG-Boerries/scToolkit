@@ -1,0 +1,1888 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Single-Cell Clustering &amp; Dimensionality Reduction Pipeline" href="03_search_for_clustering_parameters.html" />
+    <link rel="prev" title="Single-Cell RNA-seq Preprocessing and QC Pipeline" href="01_Preprocessing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../_notebook_list.html">Tutorial Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#database-curation">00_Database_curation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#preprocessing">01_Preprocessing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../_notebook_list.html#clustering-preprocessing-and-gse">02_clustering_preprocessing_and_GSE</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SUMMARY">SUMMARY</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Load-the-Adata-object">Load the Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Object-Preprocessing-for-GSE-and-clustering">Object Preprocessing for GSE and clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#IMPORTANT---THIS-IS-A-MUST-READ!!!!">IMPORTANT - THIS IS A MUST READ!!!!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Setup:-Genes-to-Exclude-Based-on-Biological-Irrelevance-and-Artifacts">Setup: Genes to Exclude Based on Biological Irrelevance and Artifacts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#GSE-Marker-Scoring">GSE Marker Scoring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Cell-Types">Cell Types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Grouping-and-saving-in-the-adata-object">Grouping and saving in the adata object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Running-GSE---ORA-with-significance-thresholds">Running GSE - ORA with significance thresholds</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Rest">Rest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_notebook_list.html#single-cell-gene-set-enrichment-marker-selection-pipeline">Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#search-for-clustering-parameters">03_search_for_clustering_parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#downstream">04_downstream</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../_notebook_list.html">Tutorial Notebooks</a></li>
+      <li class="breadcrumb-item active">Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/02_clustering_preprocessing_and_GSE.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Single-Cell-Gene-Set-Enrichment-&amp;-Marker-Selection-Pipeline">
+<h1>Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline<a class="headerlink" href="#Single-Cell-Gene-Set-Enrichment-&-Marker-Selection-Pipeline" title="Link to this heading"></a></h1>
+<section id="SUMMARY">
+<h2>SUMMARY<a class="headerlink" href="#SUMMARY" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Load the preprocessed AnnData object and configure computing resources.</p></li>
+<li><p>Remove specific gene families (MT, RBS, hemoglobin) to improve clustering signal.</p></li>
+<li><p>Execute normalization, log-transformation, and scaling.</p></li>
+<li><p>Iteratively query a combined reference database (PanglaoDB, CellMarker, etc.) to curate cell-type specific gene signatures.</p></li>
+<li><p>Run Over-Representation Analysis (ORA) using <code class="docutils literal notranslate"><span class="pre">decoupler</span></code> to score cell identity probabilities.</p></li>
+<li><p>Benchmarking selected marker sets against the global database using Jaccard Similarity indices.</p></li>
+<li><p>Generate dual-axis plots comparing marker set similarity and size to ensure robustness.</p></li>
+</ol>
+<section id="1.-Gene-Filtering-&amp;-Preprocessing">
+<h3>1. Gene Filtering &amp; Preprocessing<a class="headerlink" href="#1.-Gene-Filtering-&-Preprocessing" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Configuration:</strong> Access <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;]</span></code> to define gene sets.</p></li>
+<li><p><strong>Exclusion Criteria:</strong> Remove genes related to:</p>
+<ul>
+<li><p><strong>Energy/Stress:</strong> Mitochondrial (<code class="docutils literal notranslate"><span class="pre">MT</span></code>) and Ribosomal (<code class="docutils literal notranslate"><span class="pre">RBS</span></code>) genes (often drive technical batch effects).</p></li>
+<li><p><strong>Artifacts:</strong> Hemoglobin (<code class="docutils literal notranslate"><span class="pre">HG</span></code>) and Pseudogenes.</p></li>
+</ul>
+</li>
+<li><p><strong>Execution:</strong> Run <code class="docutils literal notranslate"><span class="pre">sc_code.Run_all_prep_steps_clustering</span></code> to normalize, log-transform, and scale the data (results stored in <code class="docutils literal notranslate"><span class="pre">adata.X</span></code>).</p></li>
+</ul>
+</section>
+<section id="2.-Curated-Marker-Selection">
+<h3>2. Curated Marker Selection<a class="headerlink" href="#2.-Curated-Marker-Selection" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Database Loading:</strong> Load a massive <code class="docutils literal notranslate"><span class="pre">combined_database</span></code> containing markers from multiple public repositories.</p></li>
+<li><p><strong>Iterative Querying:</strong> Use <code class="docutils literal notranslate"><span class="pre">sc_utils.search_database</span></code> to find markers for specific lineages:</p>
+<ul>
+<li><p><strong>Immune:</strong> T cells, B cells, NK cells, Macrophages, Dendritic cells, Plasma cells.</p></li>
+<li><p><strong>Structural:</strong> Endothelial cells.</p></li>
+<li><p><strong>States:</strong> Activated vs. Exhausted phenotypes.</p></li>
+</ul>
+</li>
+<li><p><strong>Scoring:</strong> Use <code class="docutils literal notranslate"><span class="pre">sc_utils.get_element_and_counts_with_positional_sum</span></code> to rank genes based on frequency and specificity across databases.</p></li>
+<li><p><strong>Storage:</strong> Compile selected top <span class="math notranslate nohighlight">\(N\)</span> genes (default 20) into <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;genesets&quot;][&quot;cell_type_markers&quot;]</span></code>.</p></li>
+</ul>
+</section>
+<section id="3.-Decoupler-ORA-Scoring">
+<h3>3. Decoupler ORA Scoring<a class="headerlink" href="#3.-Decoupler-ORA-Scoring" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Layer Switching:</strong> Switch <code class="docutils literal notranslate"><span class="pre">adata.X</span></code> to <code class="docutils literal notranslate"><span class="pre">log2norm_counts</span></code> (ORA requires normalized, non-negative data, not scaled Z-scores).</p></li>
+<li><p><strong>Enrichment:</strong> Run <code class="docutils literal notranslate"><span class="pre">sc_code.run_decoupler</span></code> using the curated <code class="docutils literal notranslate"><span class="pre">gse_marker_dict</span></code>.</p></li>
+<li><p><strong>Cleanup:</strong> Reset <code class="docutils literal notranslate"><span class="pre">adata.X</span> <span class="pre">=</span> <span class="pre">None</span></code> to optimize memory usage (removing the dense scaled matrix).</p></li>
+<li><p><strong>Save:</strong> Export intermediate object to <code class="docutils literal notranslate"><span class="pre">02_tonsil_blood_DISCO_clustering_preprocessed.h5ad</span></code>.</p></li>
+</ul>
+</section>
+<section id="4.-Validation:-Jaccard-Similarity-Benchmarking">
+<h3>4. Validation: Jaccard Similarity Benchmarking<a class="headerlink" href="#4.-Validation:-Jaccard-Similarity-Benchmarking" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Objective:</strong> Validate that the selected marker sets are representative and distinct compared to the rest of the database.</p></li>
+<li><p><strong>Metric:</strong> Calculate <strong>Jaccard Index</strong> (Intersection over Union) between:</p>
+<ol class="arabic simple">
+<li><p><strong>Our Method vs. Rest:</strong> How similar our selected markers are to the remaining database entries.</p></li>
+<li><p><strong>Refined Groups:</strong> Internal consistency within the database.</p></li>
+</ol>
+</li>
+<li><p><strong>Logic:</strong></p>
+<ul>
+<li><p>Computes overlap counts, removed genes, and kept genes.</p></li>
+<li><p>Identifies if the selected markers capture the core identity of the cell type better than random database subsets.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="5.-Validation-Visualization">
+<h3>5. Validation Visualization<a class="headerlink" href="#5.-Validation-Visualization" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Plotting:</strong> Generate complex bar plots for each cell type.</p>
+<ul>
+<li><p><strong>Primary Axis:</strong> Jaccard Similarity score (Bar).</p></li>
+<li><p><strong>Secondary Axis:</strong> Gene Set Size (Line).</p></li>
+</ul>
+</li>
+<li><p><strong>Interpretation:</strong> Compares “Our Method” against the top 200 similar gene sets to visualize performance ranking.</p></li>
+<li><p><strong>Export:</strong> Saves high-resolution PDFs to <code class="docutils literal notranslate"><span class="pre">../Figures/barplots</span></code>.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="Imports">
+<h1>Imports<a class="headerlink" href="#Imports" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable autoreloading, delete this for deploying!!!</span>
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">load_ext</span> memory_profiler
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># Provides functions to interact with the operating system</span>
+
+
+<span class="c1"># NOTE: UNCOMMENT IF NO GPU AVAILABLE!</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>  <span class="c1"># Adjust device IDs as per your setup,</span>
+
+<span class="c1"># IBMS Libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="c1"># Some libraries (e.g., decoupler) may require setting rarely used parallelization</span>
+<span class="c1"># backends. This function ensures all common thread settings are configured.</span>
+<span class="c1"># utils.set_threads(10)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/projects/Research/Internal/Proximap/ssd/envs/scToolkit_check_TD/proximap_stable_28_08_2025/lib/python3.12/site-packages/louvain/__init__.py:54: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools&lt;81.
+  from pkg_resources import get_distribution, DistributionNotFound
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CUDA devices visible: 0
+CPU times: user 7.37 s, sys: 520 ms, total: 7.89 s
+Wall time: 4.12 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Other general libraries that might be hepflull for analysis</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>  <span class="c1"># Enables regular expression matching and text processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>  <span class="c1"># Offers time-related functions (e.g., sleep, timestamps)</span>
+<span class="c1"># in Python, most assignments are references (symbolic links), not copies</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>  <span class="c1"># Creates deep copies of complex objects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>  <span class="c1"># Toolkit for analyzing single-cell gene expression data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>  <span class="c1"># Provides AnnData structure for annotated data matrices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>  <span class="c1"># Simplifies creation of attractive statistical plots</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>  <span class="c1"># Supports numerical operations and N-dimensional arrays</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Offers data structures and tools for data analysis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>  <span class="c1"># Enables plotting and figure customization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>  <span class="c1"># Generates all k-length combinations of an iterable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>  <span class="c1"># Contains statistical distributions and test functions</span>
+
+
+<span class="c1"># Define rcParams for customization, notebook showing is figure.dpi, reduce to not overload the nootebook sizes</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># &quot;figure.figsize&quot;: (8, 6),  # Figure size in inches</span>
+    <span class="s2">&quot;savefig.dpi&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="c1">#&quot;axes.titlesize&quot;: 16,     # Title font size</span>
+    <span class="c1">#&quot;axes.labelsize&quot;: 14,     # Label font size</span>
+    <span class="c1">#&quot;xtick.labelsize&quot;: 12,    # X-axis tick label size</span>
+    <span class="c1">#&quot;ytick.labelsize&quot;: 12     # Y-axis tick label size</span>
+<span class="p">})</span>
+
+<span class="c1"># Setup matplotlib notebook backend</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Load-the-Adata-object">
+<h1>Load the Adata object<a class="headerlink" href="#Load-the-Adata-object" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/01_tonsil_blood_DISCO_preprocessed.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 24.2 s, sys: 2.28 s, total: 26.5 s
+Wall time: 26.5 s
+</pre></div></div>
+</div>
+</section>
+<section id="Object-Preprocessing-for-GSE-and-clustering">
+<h1>Object Preprocessing for GSE and clustering<a class="headerlink" href="#Object-Preprocessing-for-GSE-and-clustering" title="Link to this heading"></a></h1>
+</section>
+<section id="IMPORTANT---THIS-IS-A-MUST-READ!!!!">
+<h1>IMPORTANT - THIS IS A MUST READ!!!!<a class="headerlink" href="#IMPORTANT---THIS-IS-A-MUST-READ!!!!" title="Link to this heading"></a></h1>
+<div class="line-block">
+<div class="line">Excluding certain gene families during cell-typing helps improve clustering</div>
+<div class="line">accuracy by reducing noise from biologically irrelevant or highly variable</div>
+<div class="line">processes such as mitochondrial activity, ribosomal biogenesis, or pseudogene</div>
+<div class="line">expression. These genes often dominate the total expression variance but do not</div>
+<div class="line">define cell identity, which can lead to misleading cluster separation.</div>
+</div>
+<div class="line-block">
+<div class="line">When the analysis also focuses on metabolism or related processes, the raw object</div>
+<div class="line">can be reloaded after clustering, and the expression of these genes can then be</div>
+<div class="line">examined to study metabolic or stress-related states in more detail</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;qc&quot;</span><span class="p">][</span><span class="s2">&quot;gene_identifiers&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;])
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup genes to exclude based on biological irrelevance and artifacts</span>
+
+<span class="c1"># The qc genesets are saved in:</span>
+<span class="c1"># adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;].keys()</span>
+<span class="c1">#[&#39;mousekeeping&#39;, &#39;hrt&#39;, &#39;IG_genes&#39;, &#39;processed_transcripts&#39;, &#39;pseudogenes&#39;, &#39;TR_genes&#39;,</span>
+<span class="c1"># &#39;MT&#39;, &#39;RBS&#39;, &#39;protein_coding&#39;, &#39;MTRBS&#39;, &#39;death&#39;, &#39;NIMA&#39;, &#39;meiosis&#39;, &#39;cell_division&#39;, &#39;cell_replication&#39;,</span>
+<span class="c1"># &#39;cell_cycle&#39;, &#39;GTPase&#39;, &#39;ATPase&#39;, &#39;defensin&#39;, &#39;heat_shock&#39;, &#39;stress&#39;, &#39;caspase&#39;, &#39;TNF&#39;, &#39;inflam_2&#39;, &#39;oncogene&#39;, &#39;HG&#39;]</span>
+
+<span class="c1"># Most of them are necessary, but there are genes where differences in expression</span>
+<span class="c1"># are driven by biological processes not relevant to the analysis — for example,</span>
+<span class="c1"># genes related to energy production (such as mitochondrial [MT] and ribosomal</span>
+<span class="c1"># [RBS] genes), replication, or potential artifacts (such as hemoglobin [HG]</span>
+<span class="c1"># genes), as well as TEC (to be experimentally confirmed) and pseudogenes.</span>
+
+<span class="c1"># adding custom genesets via:</span>
+<span class="c1"># adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;][&quot;custom&quot;] = &quot;^Gene1$|reg.*ex&quot;  # Read a regex tutorial if you don&#39;t understand this</span>
+
+<span class="c1"># Here we remove the Mitochondrial, ribosomoal, mitoribosomal, TEC genes and pseudogenes</span>
+<span class="c1"># Adjust this to your needs.</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;exclude_gene_family_regex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;qc&quot;</span><span class="p">][</span><span class="s2">&quot;gene_identifiers&quot;</span><span class="p">][</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;MT&quot;</span><span class="p">,</span> <span class="s2">&quot;HG&quot;</span><span class="p">,</span> <span class="s2">&quot;RBS&quot;</span><span class="p">,</span> <span class="s2">&quot;PSEUDO&quot;</span><span class="p">]]</span>
+
+<span class="c1"># NOTE: You have to be certain about gene removal; excluding relevant genes may</span>
+<span class="c1"># hurt performance. Sometimes this is an iterative process</span>
+<span class="c1"># for example, PBMC clustering may require removing TCR genes.</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Setup:-Genes-to-Exclude-Based-on-Biological-Irrelevance-and-Artifacts">
+<h1>Setup: Genes to Exclude Based on Biological Irrelevance and Artifacts<a class="headerlink" href="#Setup:-Genes-to-Exclude-Based-on-Biological-Irrelevance-and-Artifacts" title="Link to this heading"></a></h1>
+<p>The QC genesets are stored in:</p>
+<p><code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;].keys()</span></code></p>
+<div class="line-block">
+<div class="line">These include:</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mousekeeping</span></code>, <code class="docutils literal notranslate"><span class="pre">hrt</span></code>, <code class="docutils literal notranslate"><span class="pre">IG_genes</span></code>, <code class="docutils literal notranslate"><span class="pre">processed_transcripts</span></code>, <code class="docutils literal notranslate"><span class="pre">pseudogenes</span></code>,</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">TR_genes</span></code>, <code class="docutils literal notranslate"><span class="pre">MT</span></code>, <code class="docutils literal notranslate"><span class="pre">RBS</span></code>, <code class="docutils literal notranslate"><span class="pre">protein_coding</span></code>, <code class="docutils literal notranslate"><span class="pre">MTRBS</span></code>, <code class="docutils literal notranslate"><span class="pre">death</span></code>,</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">NIMA</span></code>, <code class="docutils literal notranslate"><span class="pre">meiosis</span></code>, <code class="docutils literal notranslate"><span class="pre">cell_division</span></code>, <code class="docutils literal notranslate"><span class="pre">cell_replication</span></code>, <code class="docutils literal notranslate"><span class="pre">cell_cycle</span></code>,</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">GTPase</span></code>, <code class="docutils literal notranslate"><span class="pre">ATPase</span></code>, <code class="docutils literal notranslate"><span class="pre">defensin</span></code>, <code class="docutils literal notranslate"><span class="pre">heat_shock</span></code>, <code class="docutils literal notranslate"><span class="pre">stress</span></code>,</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">caspase</span></code>, <code class="docutils literal notranslate"><span class="pre">TNF</span></code>, <code class="docutils literal notranslate"><span class="pre">inflam_2</span></code>, <code class="docutils literal notranslate"><span class="pre">oncogene</span></code>, <code class="docutils literal notranslate"><span class="pre">HG</span></code></div>
+</div>
+<p>Some gene groups reflect processes unrelated to the biological focus of your analysis — for example:</p>
+<ul class="simple">
+<li><p><strong>Energy metabolism</strong>: mitochondrial (<code class="docutils literal notranslate"><span class="pre">MT</span></code>), ribosomal (<code class="docutils literal notranslate"><span class="pre">RBS</span></code>, <code class="docutils literal notranslate"><span class="pre">MTRBS</span></code>)</p></li>
+<li><p><strong>Artifacts</strong>: hemoglobin (<code class="docutils literal notranslate"><span class="pre">HG</span></code>)</p></li>
+<li><p><strong>Non-informative</strong>: pseudogenes, TEC (to be validated)</p></li>
+</ul>
+<p>These can be excluded to reduce irrelevant biological or technical signals.</p>
+<p>To add custom gene sets:</p>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;][&quot;custom_regex&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;^GENE1$|reg.*ex&quot;</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;][&quot;custom_list&quot;]</span> <span class="pre">=</span> <span class="pre">[GENE1,</span> <span class="pre">&quot;GENE2&quot;]</span></code></div>
+</div>
+<p>To define which gene families to exclude:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;exclude_gene_family_regex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;qc&quot;</span><span class="p">][</span><span class="s2">&quot;gene_identifiers&quot;</span><span class="p">][</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;MT&quot;</span><span class="p">,</span> <span class="s2">&quot;HG&quot;</span><span class="p">,</span> <span class="s2">&quot;GTF_RBS&quot;</span><span class="p">,</span> <span class="s2">&quot;GTF_pseudogenes&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><strong>Note</strong>: You have to be certain about gene removal; excluding relevant genes may</div>
+<div class="line">hurt performance. Sometimes this is an iterative process</div>
+<div class="line">for example, PBMC clustering may require removing TCR genes.</div>
+</div>
+</div></blockquote>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the Preprocessing for GSE and Clustering</span>
+
+<span class="c1"># This function performs a series of preprocessing steps on the provided AnnData object, including</span>
+<span class="c1"># filtering genes, normalization, log-transforming, scaling, and regression. The steps are configurable based on the</span>
+<span class="c1"># settings in `adata.uns[&quot;config&quot;]`. It also handles saving intermediate results in `adata.layers`</span>
+<span class="c1"># and updating the preprocessing status in `adata.uns[&quot;stats&quot;][&quot;preprocessors_ran&quot;]`.</span>
+
+
+<span class="c1"># NOTE: We filtering here refers to the gene removal by geneset we defined in the previous cell</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">Run_all_prep_steps_clustering</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+
+<span class="c1"># NOTE: After the execution the adata.X is scaled, which is default for the PCA but not used anywhere else.</span>
+<span class="c1">#       ALWAYS CHECK WHICH DATA FORMAT EACH ALGORITHM REQUIRES — CALCULATING DEGs ON Z-SCORES IS INCORRECT!</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:Run_all_prep_steps_clustering - ################################################################################
+Started Raw Count Preprocessing
+################################################################################
+INFO:sc_code.py:Run_all_prep_steps_clustering - Running Regex gene exclusion
+INFO:sc_code.py:Run_all_prep_steps_clustering - Normalization time: 9.996161460876465
+INFO:sc_code.py:Run_all_prep_steps_clustering - Scaling data...
+INFO:sc_code.py:Run_all_prep_steps_clustering - ################################################################################
+Finished RNA Preprocessing after 71.97963285446167 seconds
+################################################################################
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: Here we can see the layers now and that we have less genes.</span>
+<span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 573115 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+    layers: &#39;counts&#39;, &#39;norm_counts&#39;, &#39;log2norm_counts&#39;, &#39;scaled&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the Preprocessing for GSE and Clustering</span>
+
+<span class="c1"># This function performs a series of preprocessing steps on the provided AnnData object, including</span>
+<span class="c1"># filtering genes, normalization, log-transforming, scaling, and regression. The steps are configurable based on the</span>
+<span class="c1"># settings in `adata.uns[&quot;config&quot;]`. It also handles saving intermediate results in `adata.layers`</span>
+<span class="c1"># and updating the preprocessing status in `adata.uns[&quot;stats&quot;][&quot;preprocessors_ran&quot;]`.</span>
+
+<span class="c1"># NOTE: We filtering here refers to the gene removal by geneset we defined in the previous cell</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">Run_all_prep_steps_clustering</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+
+<span class="c1"># NOTE: After the execution the adata.X is scaled, which is default for the PCA but not used anywhere else.</span>
+<span class="c1">#       ALWAYS CHECK WHICH DATA FORMAT EACH ALGORITHM REQUIRES — CALCULATING DEGs ON Z-SCORES IS INCORRECT!</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:Run_all_prep_steps_clustering - You already ran the Run_all_prep_steps_clustering, skipping re-execution!
+</pre></div></div>
+</div>
+</section>
+<section id="GSE-Marker-Scoring">
+<h1>GSE Marker Scoring<a class="headerlink" href="#GSE-Marker-Scoring" title="Link to this heading"></a></h1>
+<section id="Cell-Types">
+<h2>Cell Types<a class="headerlink" href="#Cell-Types" title="Link to this heading"></a></h2>
+<section id="Get-the-Genesets">
+<h3>Get the Genesets<a class="headerlink" href="#Get-the-Genesets" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">combined_database</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">get_ref_db</span><span class="p">(</span>
+        <span class="n">db</span><span class="o">=</span><span class="s2">&quot;Combined&quot;</span><span class="p">,</span> <span class="n">organism</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span> <span class="c1"># Default databases are [&quot;PanglaoDB&quot;, &quot;CellMarker&quot;, &quot;SCType&quot;, &quot;CellTypist&quot;],</span>
+<span class="c1"># These are the most common cell type databases in one table</span>
+<span class="n">combined_database</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>genesymbol</th>
+      <th>cell_type</th>
+      <th>germ_layer</th>
+      <th>specificity</th>
+      <th>tissue</th>
+      <th>presence</th>
+      <th>db</th>
+      <th>tissue_specific</th>
+      <th>cancer_type</th>
+      <th>condition</th>
+      <th>other_marker_name</th>
+      <th>gene_function</th>
+      <th>genesymbol_down</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>CTRB1</td>
+      <td>Acinar cells</td>
+      <td>Endoderm</td>
+      <td>0.000629</td>
+      <td>Pancreas</td>
+      <td>0.017</td>
+      <td>PanglaoDB</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>KLK1</td>
+      <td>Endothelial cells</td>
+      <td>Mesoderm</td>
+      <td>0.008420</td>
+      <td>Vasculature</td>
+      <td>0.013</td>
+      <td>PanglaoDB</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;db&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([&#39;PanglaoDB&#39;, &#39;CellTypist&#39;, &#39;CellMarker&#39;, &#39;SCType&#39;], dtype=object)
+</pre></div></div>
+</div>
+<ul class="simple">
+<li><p><strong>genesymbol</strong>: Gene symbol (official short name of the gene).</p></li>
+<li><p><strong>cell_type</strong>: Cell type where the gene is predominantly expressed.</p></li>
+<li><p><strong>germ_layer</strong>: Embryonic germ layer origin (e.g., endoderm, ectoderm, mesoderm).</p></li>
+<li><p><strong>specificity</strong>: Specificity score indicating how uniquely the gene marks this cell type.</p></li>
+<li><p><strong>tissue</strong>: Tissue where the gene is primarily expressed.</p></li>
+<li><p><strong>presence</strong>: Frequency or fraction of cells expressing this gene in the tissue.</p></li>
+<li><p><strong>db</strong>: Source database or reference for the marker information.</p></li>
+<li><p><strong>tissue_specific</strong>: Whether the gene is considered tissue-specific (if annotated).</p></li>
+<li><p><strong>cancer_type</strong>: Associated cancer type, if relevant.</p></li>
+<li><p><strong>condition</strong>: Condition or disease context for this gene, if applicable.</p></li>
+<li><p><strong>other_marker_name</strong>: Alternative marker names or aliases.</p></li>
+<li><p><strong>gene_function</strong>: Known biological function of the gene.</p></li>
+<li><p><strong>genesymbol_down</strong>: Related downregulated gene symbol, if applicable.</p></li>
+</ul>
+<section id="Tutorial-how-to-search-the-database">
+<h4>Tutorial how to search the database<a class="headerlink" href="#Tutorial-how-to-search-the-database" title="Link to this heading"></a></h4>
+<p>Use <code class="docutils literal notranslate"><span class="pre">search_database</span></code> to flexibly filter a column using OR, AND, and NOT terms, with optional case sensitivity.</p>
+<div class="line-block">
+<div class="line"><strong>OR search</strong> (at least one term matches):</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">search_database(db,</span> <span class="pre">search_term_or=[&quot;mitophagy&quot;,</span> <span class="pre">&quot;pexophagy&quot;])</span></code></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>AND search</strong> (all terms must match):</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">search_database(db,</span> <span class="pre">search_term_and=&quot;astro&quot;)</span></code></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>Combine OR and AND</strong>:</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">search_database(db,</span> <span class="pre">search_term_or=[&quot;mitophagy&quot;,</span> <span class="pre">&quot;pexophagy&quot;],</span> <span class="pre">search_term_and=[&quot;gobp&quot;])</span></code></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>Add NOT terms</strong> (exclude entries):</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">search_database(db,</span> <span class="pre">search_term_or=[&quot;mitophagy&quot;,</span> <span class="pre">&quot;pexophagy&quot;],</span> <span class="pre">search_term_and=[&quot;gobp&quot;],</span> <span class="pre">search_term_not_and=[&quot;response&quot;])</span></code></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>Control case sensitivity</strong>:</div>
+<div class="line">Use <code class="docutils literal notranslate"><span class="pre">lower_search_space_and=False</span></code>, <code class="docutils literal notranslate"><span class="pre">lower_search_space_or=False</span></code>, etc., to make searches <strong>case-sensitive</strong>. By default, all are <code class="docutils literal notranslate"><span class="pre">True</span></code> (case-insensitive).</div>
+</div>
+<div class="line-block">
+<div class="line"><strong>Return boolean mask (indices)</strong>:</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">search_database(db,</span> <span class="pre">search_term_and=&quot;astro&quot;,</span> <span class="pre">return_indices=True);</span> <span class="pre">db[mask]</span></code></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is an iterative process; you should check the gene set names after each change</span>
+<span class="c1"># to refine the final list.</span>
+
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of cell types matching exactly &#39;T Cell&#39;: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of cell types matching any T Cell variants: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of T cell-related types excluding NK cells: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of cell types matching exactly &#39;T Cell&#39;: 2
+Number of cell types matching any T Cell variants: 191
+Number of T cell-related types excluding NK cells: 185
+</pre></div></div>
+</div>
+</section>
+<section id="Tutorial-how-to-select-genes-per-cell-type">
+<h4>Tutorial how to select genes per cell-type<a class="headerlink" href="#Tutorial-how-to-select-genes-per-cell-type" title="Link to this heading"></a></h4>
+<p>The function <code class="docutils literal notranslate"><span class="pre">get_element_and_counts_with_positional_sum</span></code> summarizes marker genes across selected cell types or groups.</p>
+<section id="Example-output-columns">
+<h5>Example output columns<a class="headerlink" href="#Example-output-columns" title="Link to this heading"></a></h5>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>gene</p></th>
+<th class="head"><p>gs_count</p></th>
+<th class="head"><p>gs_count_pct</p></th>
+<th class="head"><p>total_count</p></th>
+<th class="head"><p>cell_types</p></th>
+<th class="head"><p>highly_variable_rank</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Cd8a</p></td>
+<td><p>56</p></td>
+<td><p>17.39</p></td>
+<td><p>86</p></td>
+<td><p>T cells, Effector CD8+ T cell, …</p></td>
+<td><p>35.0</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>gene</strong>: Gene symbol.</p></li>
+<li><p><strong>gs_count</strong>: Number of times this gene appears in your subsetted group.</p></li>
+<li><p><strong>gs_count_pct</strong>: Percentage of group cell types expressing this gene.</p></li>
+<li><p><strong>total_count</strong>: Total times this gene appears across the whole database.</p></li>
+<li><p><strong>cell_types</strong>: All cell types where this gene was found (joined as a string).</p></li>
+<li><p><strong>highly_variable_rank</strong>: Rank of gene variability (added if <code class="docutils literal notranslate"><span class="pre">adata</span></code> provided).</p></li>
+</ul>
+</section>
+<section id="How-to-use---and-for-manuall-refinement">
+<h5>How to use - and for manuall refinement<a class="headerlink" href="#How-to-use---and-for-manuall-refinement" title="Link to this heading"></a></h5>
+<div class="line-block">
+<div class="line">To get a detailed DataFrame preview (use <code class="docutils literal notranslate"><span class="pre">.head(5)</span></code> to show first 5 rows):</div>
+<div class="line">```python sc_utils.get_element_and_counts_with_positional_sum( subsetted_df, combined_database, adata=adata, return_list=False ).head(5)</div>
+</div>
+<div class="line-block">
+<div class="line">To get a sorted list of top genes:</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">gene_list</span> <span class="pre">=</span> <span class="pre">sc_utils.get_element_and_counts_with_positional_sum(subsetted_df,</span> <span class="pre">combined_database,</span> <span class="pre">adata=adata);</span> <span class="pre">print(gene_list[:n_genes])</span></code></div>
+</div>
+<div class="line-block">
+<div class="line">To store top genes in a marker dictionary:</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">marker_dict[this_ct_key]</span> <span class="pre">=</span> <span class="pre">sc_utils.get_element_and_counts_with_positional_sum(subsetted_df,</span> <span class="pre">combined_database,</span> <span class="pre">adata=adata)[:n_genes]</span></code></div>
+</div>
+<div class="line-block">
+<div class="line">If you want to change the default sorting after getting the DataFrame, you can manually re-sort it using different columns.</div>
+<div class="line">For example, to prioritize genes with higher total counts and then sort by highly variable gene rank, you can do:</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">df</span> <span class="pre">=</span> <span class="pre">sc_utils.get_element_and_counts_with_positional_sum(</span>&#160;&#160;&#160;&#160; <span class="pre">subsetted_df,</span>&#160;&#160;&#160;&#160; <span class="pre">combined_database,</span>&#160;&#160;&#160;&#160; <span class="pre">adata=adata,</span>&#160;&#160;&#160;&#160; <span class="pre">return_list=False,</span>&#160;&#160;&#160;&#160; <span class="pre">sort_columns=[&quot;gs_count&quot;,</span> <span class="pre">&quot;highly_variable_rank&quot;],</span>&#160;&#160;&#160;&#160; <span class="pre">ascending=[False,</span> <span class="pre">True]</span> <span class="pre">)</span></code></p>
+</section>
+</section>
+</section>
+<section id="Get-the-cell-type-marker_dict">
+<h3>Get the cell-type marker_dict<a class="headerlink" href="#Get-the-cell-type-marker_dict" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">keys = cell-type name</div>
+<div class="line">values = list of genes</div>
+<div class="line">This is our prefered data format for genesets.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the number of genes per gene set</span>
+<span class="n">n_genes</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="c1"># create the empyt marker dict</span>
+<span class="n">ct_marker_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1">############################################################################################################################################</span>
+<span class="c1"># Immune and Blood cell</span>
+<span class="c1">############################################################################################################################################</span>
+
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;plasma_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;plasm&quot;</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;b cell&quot;</span><span class="p">,</span> <span class="s2">&quot;dendritic&quot;</span><span class="p">,</span> <span class="s2">&quot;malig&quot;</span><span class="p">,</span> <span class="s2">&quot;abnorm&quot;</span><span class="p">],)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">############################################################################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;macrophage_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;macro&quot;</span><span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">############################################################################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;dendritic_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;dendri&quot;</span><span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">###########################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;b_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;B Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">###########################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;t_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">###########################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;nk_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;B Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-Cell&quot;</span>
+    <span class="p">],</span>
+    <span class="n">lower_search_space_not_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">###########################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;activated_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;activated&quot;</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">###########################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;exhausted_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+    <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;exhausted&quot;</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span><span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">############################################################################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;endothelial_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;endothe&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span>
+    <span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span>
+<span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">############################################################################################################################################</span>
+<span class="n">this_ct_key</span> <span class="o">=</span> <span class="s2">&quot;granulocyte_cells&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">this_ct_key</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+<span class="n">cell_types</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+    <span class="n">combined_database</span><span class="p">,</span>
+    <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;granuloc&quot;</span><span class="p">,</span> <span class="s2">&quot;eosin&quot;</span><span class="p">,</span> <span class="s2">&quot;baso&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+<span class="n">ct_marker_dict</span><span class="p">[</span><span class="n">this_ct_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span>
+    <span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span>
+<span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+
+<span class="c1">####################################</span>
+<span class="c1"># Grouping the cell types and save the info in the adata.uns</span>
+<span class="n">general_cells</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;plasma_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;macrophage_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;dendritic_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;b_cells&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;t_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;nk_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;endothelial_cells&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;granulocyte_cells&quot;</span>
+<span class="p">]</span>
+
+<span class="n">activated_exhauseted_cells</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;activated_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;exhausted_cells&quot;</span>
+<span class="p">]</span>
+
+<span class="c1"># malignant_cells = [</span>
+<span class="c1">#     &quot;malginant_cells&quot;, &quot;aml_cells&quot;</span>
+<span class="c1"># ]</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;cell_type_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;cell_type_info&quot;</span><span class="p">][</span><span class="s2">&quot;general_cells&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general_cells</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;cell_type_info&quot;</span><span class="p">][</span><span class="s2">&quot;activated_exhauseted_cells&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activated_exhauseted_cells</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+################################################################################
+plasma_cells
+################################################################################
+################################################################################
+macrophage_cells
+################################################################################
+################################################################################
+dendritic_cells
+################################################################################
+################################################################################
+b_cells
+################################################################################
+################################################################################
+t_cells
+################################################################################
+################################################################################
+nk_cells
+################################################################################
+################################################################################
+activated_cells
+################################################################################
+################################################################################
+exhausted_cells
+################################################################################
+################################################################################
+endothelial_cells
+################################################################################
+################################################################################
+granulocyte_cells
+################################################################################
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Grouping-and-saving-in-the-adata-object">
+<h2>Grouping and saving in the adata object<a class="headerlink" href="#Grouping-and-saving-in-the-adata-object" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Store the genesets at the correct postion for the automated donwstream processing</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">][</span><span class="s2">&quot;cell_type_markers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">ct_marker_dict</span><span class="p">)</span>
+
+<span class="c1"># Create the full marker dict for GSE, then we only need to perform one run</span>
+<span class="n">gse_marker_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">gse_marker_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ct_marker_dict</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Running-GSE---ORA-with-significance-thresholds">
+<h2>Running GSE - ORA with significance thresholds<a class="headerlink" href="#Running-GSE---ORA-with-significance-thresholds" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: For GSE we need log norm data</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log2norm_counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="c1"># NOTE: The copy is mandatory, because Decoupler sometimes fails and replaces values in the data</span>
+<span class="c1">#       As well as the scanpy default cluster preprocessing functions (PCA, Neighbors, ...)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">run_decoupler</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="s2">&quot;ora&quot;</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">gse_marker_dict</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_n</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running ora on mat with 573115 samples and 8497 targets for 10 sources.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|█████████████████████████████████████████████████████████████████████████| 573115/573115 [03:24&lt;00:00, 2798.62it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 2h 30min 17s, sys: 6.46 s, total: 2h 30min 23s
+Wall time: 3min 39s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 573115 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;, &#39;cell_type_info&#39;, &#39;genesets&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;, &#39;ora_estimate&#39;, &#39;ora_pvals&#39;
+    layers: &#39;counts&#39;, &#39;norm_counts&#39;, &#39;log2norm_counts&#39;, &#39;scaled&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Saving the data layers twice creates a overhead, we remove the X layer here.</span>
+<span class="c1"># it was scaled data, so dense and therefore basically having more than 70% of</span>
+<span class="c1"># the size of the object. Having it twice is inefficient</span>
+<span class="c1"># NOTE: BUT Scanpys functions don&#39;t check if the X is none, so make sure to reset the X to the desired layer!</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Rest">
+<h1>Rest<a class="headerlink" href="#Rest" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished Full Preprocessing in </span><span class="si">{</span><span class="n">end</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Finished Full Preprocessing in 332.11 seconds.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">save_h5ad</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;../data/02_tonsil_blood_DISCO_clustering_preprocessed.h5ad&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;lzf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 3min 18s, sys: 6.75 s, total: 3min 25s
+Wall time: 3min 25s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 573115 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;
+    uns: &#39;cell_type_info&#39;, &#39;genesets&#39;, &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;, &#39;ora_estimate&#39;, &#39;ora_pvals&#39;
+    layers: &#39;counts&#39;, &#39;norm_counts&#39;, &#39;log2norm_counts&#39;, &#39;scaled&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">pd</span><span class="p">,</span> <span class="n">ad</span><span class="p">,</span> <span class="n">validate_groupby_column</span><span class="p">,</span>
+                        <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">jaccard_numpy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">all_genes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">union1d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">mask_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">all_genes</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">mask_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">all_genes</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">inter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mask_a</span><span class="p">,</span> <span class="n">mask_b</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask_a</span><span class="p">,</span> <span class="n">mask_b</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">inter</span> <span class="o">/</span> <span class="n">union</span> <span class="k">if</span> <span class="n">union</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cell_types</span><span class="p">(</span><span class="n">combined_database</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">use_this_ct</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve matching cell-type names from a database based on category key.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        combined_database (pd.DataFrame): Database containing cell-type names.</span>
+<span class="sd">        use_this_ct (str): Cell-type category to query (e.g., &quot;b_cells&quot;).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[str]: Matched cell-type names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># #########################################################</span>
+    <span class="c1"># Match-case block for supported cell-type identifiers</span>
+    <span class="c1"># #########################################################</span>
+    <span class="k">match</span> <span class="n">use_this_ct</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">&quot;plasma_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="s2">&quot;plasm&quot;</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;b cell&quot;</span><span class="p">,</span> <span class="s2">&quot;dendritic&quot;</span><span class="p">,</span> <span class="s2">&quot;malig&quot;</span><span class="p">,],</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;macrophage_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;macro&quot;</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;dendritic_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;dendri&quot;</span><span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;b_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;B Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-Cell&quot;</span><span class="p">],</span>
+                <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;t_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+                <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;nk_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+                <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span>
+                    <span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;B Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;B-Cell&quot;</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">lower_search_space_not_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;activated_cells&quot;</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+                <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;activated&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">case</span> <span class="s2">&quot;exhausted_cells&quot;</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;T Cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T-Cell&quot;</span><span class="p">],</span>
+                <span class="n">lower_search_space_or</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">search_term_not_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;natural killer&quot;</span><span class="p">,</span> <span class="s2">&quot;nk&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="s2">&quot;exhausted&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">case</span> <span class="s2">&quot;endothelial_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;endothe&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span> <span class="s2">&quot;granulocyte_cells&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">search_database</span><span class="p">(</span>
+                <span class="n">combined_database</span><span class="p">,</span>
+                <span class="n">search_term_or</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;granuloc&quot;</span><span class="p">,</span> <span class="s2">&quot;eosin&quot;</span><span class="p">,</span> <span class="s2">&quot;baso&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported cell type: </span><span class="si">{</span><span class="n">use_this_ct</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_jaccard_rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">general_cells</span><span class="p">:</span>
+
+    <span class="n">cell_types</span> <span class="o">=</span> <span class="n">get_cell_types</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Reference gene set (our method)</span>
+    <span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+    <span class="n">our_method_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span>
+            <span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">,</span> <span class="n">use_pct_key</span><span class="o">=</span><span class="s2">&quot;pct_log2p&quot;</span>
+        <span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+
+    <span class="c1"># Define refined and rest parts</span>
+    <span class="n">refined_db</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+    <span class="n">rest_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="o">~</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+
+    <span class="c1"># Group-level gene sets</span>
+    <span class="n">refined_groups</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">):</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_df</span><span class="p">[</span><span class="s2">&quot;genesymbol&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">),</span> <span class="n">group_df</span> <span class="ow">in</span> <span class="n">refined_db</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+    <span class="p">}</span>
+
+    <span class="n">rest_groups</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">):</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_df</span><span class="p">[</span><span class="s2">&quot;genesymbol&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">),</span> <span class="n">group_df</span> <span class="ow">in</span> <span class="n">rest_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+    <span class="p">}</span>
+
+    <span class="c1"># ---- Part 1: Compare rest groups vs our_method ----</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span> <span class="ow">in</span> <span class="n">rest_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_genes</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest_genes</span> <span class="o">&amp;</span> <span class="n">our_method_genes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">jaccard_val</span> <span class="o">=</span> <span class="n">jaccard_numpy</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rest_genes</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">our_method_genes</span><span class="p">))</span>
+        <span class="n">all_jaccard_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s2">&quot;is_ref&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;rest_cell_type&quot;</span><span class="p">:</span> <span class="n">r_cell</span><span class="p">,</span>
+            <span class="s2">&quot;rest_db&quot;</span><span class="p">:</span> <span class="n">r_db</span><span class="p">,</span>
+            <span class="s2">&quot;rest_tissue&quot;</span><span class="p">:</span> <span class="n">r_tissue</span><span class="p">,</span>
+            <span class="s2">&quot;refined_cell_type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;refined_db&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;refined_tissue&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="n">jaccard_val</span><span class="p">,</span>
+            <span class="s2">&quot;overlap_count&quot;</span><span class="p">:</span> <span class="n">overlap</span>
+        <span class="p">})</span>
+
+    <span class="c1"># ---- Part 2: Compare rest groups vs all refined groups ----</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span> <span class="ow">in</span> <span class="n">rest_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_genes</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">c_cell</span><span class="p">,</span> <span class="n">c_db</span><span class="p">,</span> <span class="n">c_tissue</span><span class="p">),</span> <span class="n">ref_genes</span> <span class="ow">in</span> <span class="n">refined_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ref_genes</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest_genes</span> <span class="o">&amp;</span> <span class="n">ref_genes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">overlap</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">jaccard_val</span> <span class="o">=</span> <span class="n">jaccard_numpy</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rest_genes</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">ref_genes</span><span class="p">))</span>
+            <span class="n">all_jaccard_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+                <span class="s2">&quot;is_ref&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;rest_cell_type&quot;</span><span class="p">:</span> <span class="n">r_cell</span><span class="p">,</span>
+                <span class="s2">&quot;rest_db&quot;</span><span class="p">:</span> <span class="n">r_db</span><span class="p">,</span>
+                <span class="s2">&quot;rest_tissue&quot;</span><span class="p">:</span> <span class="n">r_tissue</span><span class="p">,</span>
+                <span class="s2">&quot;refined_cell_type&quot;</span><span class="p">:</span> <span class="n">c_cell</span><span class="p">,</span>
+                <span class="s2">&quot;refined_db&quot;</span><span class="p">:</span> <span class="n">c_db</span><span class="p">,</span>
+                <span class="s2">&quot;refined_tissue&quot;</span><span class="p">:</span> <span class="n">c_tissue</span><span class="p">,</span>
+                <span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="n">jaccard_val</span><span class="p">,</span>
+                <span class="s2">&quot;overlap_count&quot;</span><span class="p">:</span> <span class="n">overlap</span>
+            <span class="p">})</span>
+
+<span class="c1"># Combine into a single long-format DataFrame</span>
+<span class="n">all_jaccard_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_jaccard_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+################################################################################
+plasma_cells
+################################################################################
+################################################################################
+macrophage_cells
+################################################################################
+################################################################################
+dendritic_cells
+################################################################################
+################################################################################
+b_cells
+################################################################################
+################################################################################
+t_cells
+################################################################################
+################################################################################
+nk_cells
+################################################################################
+################################################################################
+endothelial_cells
+################################################################################
+################################################################################
+granulocyte_cells
+################################################################################
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_jaccard_rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">general_cells</span><span class="p">:</span>
+
+    <span class="n">cell_types</span> <span class="o">=</span> <span class="n">get_cell_types</span><span class="p">(</span><span class="n">combined_database</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Reference gene set (our method)</span>
+    <span class="n">subsetted_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+    <span class="n">our_method_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_element_and_counts_with_positional_sum</span><span class="p">(</span>
+            <span class="n">subsetted_df</span><span class="p">,</span> <span class="n">combined_database</span><span class="p">,</span> <span class="n">use_pct_key</span><span class="o">=</span><span class="s2">&quot;pct_log2p&quot;</span>
+        <span class="p">)[:</span><span class="n">n_genes</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+
+    <span class="c1"># Define refined and rest parts</span>
+    <span class="n">refined_db</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+    <span class="n">rest_df</span> <span class="o">=</span> <span class="n">combined_database</span><span class="p">[</span><span class="o">~</span><span class="n">combined_database</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">cell_types</span><span class="p">)]</span>
+
+    <span class="c1"># Group-level gene sets</span>
+    <span class="n">refined_groups</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">):</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_df</span><span class="p">[</span><span class="s2">&quot;genesymbol&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">),</span> <span class="n">group_df</span> <span class="ow">in</span> <span class="n">refined_db</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+    <span class="p">}</span>
+
+    <span class="n">rest_groups</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">):</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_df</span><span class="p">[</span><span class="s2">&quot;genesymbol&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tissue</span><span class="p">),</span> <span class="n">group_df</span> <span class="ow">in</span> <span class="n">rest_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+    <span class="p">}</span>
+
+    <span class="c1"># ---- Part 1: Compare rest groups vs our_method ----</span>
+    <span class="c1"># collect all overlaps</span>
+    <span class="n">overlap_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span> <span class="ow">in</span> <span class="n">rest_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">overlap_genes</span> <span class="o">=</span> <span class="n">rest_genes</span> <span class="o">&amp;</span> <span class="n">our_method_genes</span>
+        <span class="n">overlap_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">overlap_genes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlap_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">overlap_list</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span><span class="p">,</span> <span class="n">overlap_genes</span><span class="p">,</span> <span class="n">overlap_size</span><span class="p">))</span>
+
+    <span class="c1"># sort from smallest to largest overlap</span>
+    <span class="n">overlap_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">overlap_list</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="c1"># --- precompute cumulative unions from bottom to top ---</span>
+    <span class="n">cumulative_union_sets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current_union</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">overlap_genes</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">overlap_list</span><span class="p">:</span>
+        <span class="n">current_union</span> <span class="o">|=</span> <span class="n">overlap_genes</span>
+        <span class="n">cumulative_union_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_union</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+    <span class="c1"># now iterate again, this time attaching correct &quot;genes_left&quot;</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">((</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span><span class="p">,</span> <span class="n">overlap_genes</span><span class="p">,</span> <span class="n">overlap_size</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">overlap_list</span><span class="p">):</span>
+        <span class="c1"># genes left after unifying all smaller-overlapping sets (bottom→this)</span>
+        <span class="n">genes_left</span> <span class="o">=</span> <span class="n">our_method_genes</span> <span class="o">-</span> <span class="n">cumulative_union_sets</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">remaining_overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes_left</span><span class="p">)</span>
+
+        <span class="n">jaccard_val</span> <span class="o">=</span> <span class="n">jaccard_numpy</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rest_genes</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">our_method_genes</span><span class="p">))</span>
+
+        <span class="n">all_jaccard_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s2">&quot;is_ref&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;rest_cell_type&quot;</span><span class="p">:</span> <span class="n">r_cell</span><span class="p">,</span>
+            <span class="s2">&quot;rest_db&quot;</span><span class="p">:</span> <span class="n">r_db</span><span class="p">,</span>
+            <span class="s2">&quot;rest_tissue&quot;</span><span class="p">:</span> <span class="n">r_tissue</span><span class="p">,</span>
+            <span class="s2">&quot;refined_cell_type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;refined_db&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;refined_tissue&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="n">jaccard_val</span><span class="p">,</span>
+            <span class="s2">&quot;overlap_count&quot;</span><span class="p">:</span> <span class="n">overlap_size</span><span class="p">,</span>
+            <span class="s2">&quot;removed_genes&quot;</span><span class="p">:</span> <span class="n">overlap_genes</span><span class="p">,</span>
+            <span class="s2">&quot;genes_kept&quot;</span><span class="p">:</span> <span class="n">our_method_genes</span> <span class="o">-</span> <span class="n">overlap_genes</span><span class="p">,</span>
+            <span class="s2">&quot;genes_left&quot;</span><span class="p">:</span> <span class="n">genes_left</span><span class="p">,</span>
+            <span class="s2">&quot;remaining_overlap&quot;</span><span class="p">:</span> <span class="n">remaining_overlap</span>
+        <span class="p">})</span>
+
+    <span class="c1"># ---- Part 2: Compare rest groups vs all refined groups ----</span>
+    <span class="n">covered_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># &lt;-- added initialization for correct tracking</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">r_cell</span><span class="p">,</span> <span class="n">r_db</span><span class="p">,</span> <span class="n">r_tissue</span><span class="p">),</span> <span class="n">rest_genes</span> <span class="ow">in</span> <span class="n">rest_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rest_genes</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">c_cell</span><span class="p">,</span> <span class="n">c_db</span><span class="p">,</span> <span class="n">c_tissue</span><span class="p">),</span> <span class="n">ref_genes</span> <span class="ow">in</span> <span class="n">refined_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ref_genes</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">overlap_genes</span> <span class="o">=</span> <span class="n">rest_genes</span> <span class="o">&amp;</span> <span class="n">ref_genes</span>
+            <span class="n">overlap_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">overlap_genes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">overlap_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Update covered_genes</span>
+            <span class="n">covered_genes</span> <span class="o">|=</span> <span class="n">overlap_genes</span>
+
+            <span class="c1"># Gene tracking logic (same structure)</span>
+            <span class="n">removed_genes</span> <span class="o">=</span> <span class="n">overlap_genes</span>
+            <span class="n">genes_kept</span> <span class="o">=</span> <span class="n">ref_genes</span> <span class="o">-</span> <span class="n">overlap_genes</span>
+            <span class="n">genes_left</span> <span class="o">=</span> <span class="n">our_method_genes</span> <span class="o">-</span> <span class="n">covered_genes</span>
+            <span class="n">remaining_overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">genes_left</span><span class="p">)</span>
+
+            <span class="c1"># Jaccard calculation</span>
+            <span class="n">jaccard_val</span> <span class="o">=</span> <span class="n">jaccard_numpy</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rest_genes</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">ref_genes</span><span class="p">))</span>
+
+            <span class="n">all_jaccard_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+                <span class="s2">&quot;is_ref&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;rest_cell_type&quot;</span><span class="p">:</span> <span class="n">r_cell</span><span class="p">,</span>
+                <span class="s2">&quot;rest_db&quot;</span><span class="p">:</span> <span class="n">r_db</span><span class="p">,</span>
+                <span class="s2">&quot;rest_tissue&quot;</span><span class="p">:</span> <span class="n">r_tissue</span><span class="p">,</span>
+                <span class="s2">&quot;refined_cell_type&quot;</span><span class="p">:</span> <span class="n">c_cell</span><span class="p">,</span>
+                <span class="s2">&quot;refined_db&quot;</span><span class="p">:</span> <span class="n">c_db</span><span class="p">,</span>
+                <span class="s2">&quot;refined_tissue&quot;</span><span class="p">:</span> <span class="n">c_tissue</span><span class="p">,</span>
+                <span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="n">jaccard_val</span><span class="p">,</span>
+                <span class="s2">&quot;overlap_count&quot;</span><span class="p">:</span> <span class="n">overlap_size</span><span class="p">,</span>
+                <span class="s2">&quot;removed_genes&quot;</span><span class="p">:</span> <span class="n">removed_genes</span><span class="p">,</span>
+                <span class="s2">&quot;genes_kept&quot;</span><span class="p">:</span> <span class="n">genes_kept</span><span class="p">,</span>
+                <span class="s2">&quot;genes_left&quot;</span><span class="p">:</span> <span class="n">genes_left</span><span class="p">,</span>
+                <span class="s2">&quot;remaining_overlap&quot;</span><span class="p">:</span> <span class="n">remaining_overlap</span>
+            <span class="p">})</span>
+
+<span class="c1"># Combine into a single long-format DataFrame</span>
+<span class="n">all_jaccard_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_jaccard_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+################################################################################
+plasma_cells
+################################################################################
+################################################################################
+macrophage_cells
+################################################################################
+################################################################################
+dendritic_cells
+################################################################################
+################################################################################
+b_cells
+################################################################################
+################################################################################
+t_cells
+################################################################################
+################################################################################
+nk_cells
+################################################################################
+################################################################################
+endothelial_cells
+################################################################################
+################################################################################
+granulocyte_cells
+################################################################################
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_dir</span> <span class="o">=</span> <span class="s2">&quot;../Figures/barplots&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+
+<span class="c1"># === User-configurable variables ===</span>
+<span class="n">use_agg</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span>   <span class="c1"># options: &quot;sum&quot;, &quot;mean&quot;, &quot;max&quot;, &quot;median&quot;</span>
+<span class="n">top_n</span> <span class="o">=</span> <span class="mi">200</span>         <span class="c1"># number of top similar gene sets to display</span>
+<span class="n">ref_geneset_size</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># size of your reference (our_method) gene set</span>
+
+<span class="c1"># === 1. Filter Jaccard values (our_method vs refined groups only) ===</span>
+<span class="n">ref_vs_refined</span> <span class="o">=</span> <span class="n">all_jaccard_df</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">all_jaccard_df</span><span class="p">[</span><span class="s2">&quot;is_ref&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span> <span class="o">&amp;</span>
+    <span class="p">(</span><span class="n">all_jaccard_df</span><span class="p">[</span><span class="s2">&quot;refined_cell_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># === 2. Aggregate Jaccard per refined group per x ===</span>
+<span class="n">agg_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ref_vs_refined</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;refined_cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;refined_db&quot;</span><span class="p">,</span> <span class="s2">&quot;refined_tissue&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="n">use_agg</span><span class="p">})</span>
+    <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;jaccard_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+<span class="p">)</span>
+
+<span class="c1"># === 3. Compute gene set sizes from combined_database ===</span>
+<span class="n">geneset_sizes</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">combined_database</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">size</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;geneset_size&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># merge sizes into aggregated data</span>
+<span class="n">agg_df</span> <span class="o">=</span> <span class="n">agg_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">geneset_sizes</span><span class="p">,</span>
+    <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;refined_cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;refined_db&quot;</span><span class="p">,</span> <span class="s2">&quot;refined_tissue&quot;</span><span class="p">],</span>
+    <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">],</span>
+    <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;tissue&quot;</span><span class="p">])</span>
+
+<span class="c1"># === 4. Select top N refined groups per x ===</span>
+<span class="n">top_refined</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">agg_df</span>
+    <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;jaccard_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_n</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># === 5. Aggregate our_method (reference) the same way ===</span>
+<span class="n">ref_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">all_jaccard_df</span><span class="p">[</span><span class="n">all_jaccard_df</span><span class="p">[</span><span class="s2">&quot;is_ref&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s2">&quot;jaccard_value&quot;</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">use_agg</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;jaccard_value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;ref_value_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+<span class="p">)</span>
+
+<span class="c1"># === 6. Plot reference + top N refined groups for each x ===</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">top_refined</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+    <span class="n">ref_val</span> <span class="o">=</span> <span class="n">ref_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ref_df</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;ref_value_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sub_df</span> <span class="o">=</span> <span class="n">top_refined</span><span class="p">[</span><span class="n">top_refined</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Prepare data for plotting</span>
+    <span class="n">plot_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s2">&quot;Label&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;our_method&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">sub_df</span><span class="p">[</span><span class="s2">&quot;refined_cell_type&quot;</span><span class="p">],</span> <span class="n">sub_df</span><span class="p">[</span><span class="s2">&quot;refined_db&quot;</span><span class="p">],</span> <span class="n">sub_df</span><span class="p">[</span><span class="s2">&quot;refined_tissue&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;Jaccard&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">ref_val</span><span class="p">]</span> <span class="o">+</span> <span class="n">sub_df</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;jaccard_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;GeneSet_Size&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">ref_geneset_size</span><span class="p">]</span> <span class="o">+</span> <span class="n">sub_df</span><span class="p">[</span><span class="s2">&quot;geneset_size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;TopN&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_df</span><span class="p">)</span>
+    <span class="p">})</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+    <span class="c1"># --- Primary axis: Jaccard values ---</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">plot_data</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Label&quot;</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Jaccard&quot;</span><span class="p">,</span>
+        <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;Type&quot;</span><span class="p">,</span>
+        <span class="n">dodge</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">palette</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="s2">&quot;dodgerblue&quot;</span><span class="p">,</span> <span class="s2">&quot;TopN&quot;</span><span class="p">:</span> <span class="s2">&quot;gray&quot;</span><span class="p">},</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span>
+    <span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Jaccard (</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+
+    <span class="c1"># --- Secondary axis: Gene set size ---</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">plot_data</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Label&quot;</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="s2">&quot;GeneSet_Size&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;crimson&quot;</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span>
+    <span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Gene Set Size&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;crimson&quot;</span><span class="p">)</span>
+
+    <span class="c1"># --- Formatting ---</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Our Method vs Top </span><span class="si">{</span><span class="n">top_n</span><span class="si">}</span><span class="s2"> Similar Gene Sets (</span><span class="si">{</span><span class="n">use_agg</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">) — </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">ax1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># --- Save plot ---</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">_top</span><span class="si">{</span><span class="n">top_n</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">use_agg</span><span class="si">}</span><span class="s2">.pdf&quot;</span>
+    <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Saved: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/b_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_2.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/dendritic_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_5.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/endothelial_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_8.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_8.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/granulocyte_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_11.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_11.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/macrophage_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_14.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_14.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/nk_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_17.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_17.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/plasma_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_20.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_20.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1164167/3786361816.py:102: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
+  ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha=&#34;right&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✅ Saved: ../Figures/barplots/t_cells_top200_sum.pdf
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_23.png" src="../_images/notebooks_02_clustering_preprocessing_and_GSE_46_23.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="01_Preprocessing.html" class="btn btn-neutral float-left" title="Single-Cell RNA-seq Preprocessing and QC Pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="03_search_for_clustering_parameters.html" class="btn btn-neutral float-right" title="Single-Cell Clustering &amp; Dimensionality Reduction Pipeline" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1543 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Cell Data Integration and Annotation Standardization &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Single-Cell RNA-seq Preprocessing and QC Pipeline" href="01_Preprocessing.html" />
+    <link rel="prev" title="Tutorial Notebooks" href="../_notebook_list.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../_notebook_list.html">Tutorial Notebooks</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../_notebook_list.html#database-curation">00_Database_curation</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Single-Cell Data Integration and Annotation Standardization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SUMMARY">SUMMARY</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Combine-into-one-Adata-object">Combine into one Adata object</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Remove-the-meta-data-or-precalculated-columns-that-are-not-required-here">Remove the meta-data or precalculated columns that are not required here</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Concatenate-multiple-adata-objects">Concatenate multiple adata objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DISCO-mapping">DISCO mapping</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Manually-curated-database-cell-types-to-the-DISCO-cell-type-tree-cells">Manually curated database cell-types to the DISCO cell-type tree cells</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DISCO-cell-type-tree-cells">DISCO cell-type tree cells</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Excourse---Sequencing-depth">Excourse - Sequencing depth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#What-is-the-recommended-sequencing-depth-for-Single-Cell-3'-and-5'-Gene-Expression-libraries?">What is the recommended sequencing depth for Single Cell 3’ and 5’ Gene Expression libraries?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Save-the-object">Save the object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_notebook_list.html#single-cell-data-integration-and-annotation-standardization">Single-Cell Data Integration and Annotation Standardization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#preprocessing">01_Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#clustering-preprocessing-and-gse">02_clustering_preprocessing_and_GSE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#search-for-clustering-parameters">03_search_for_clustering_parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#downstream">04_downstream</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../_notebook_list.html">Tutorial Notebooks</a></li>
+      <li class="breadcrumb-item active">Single-Cell Data Integration and Annotation Standardization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/00_Database_curation.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Single-Cell-Data-Integration-and-Annotation-Standardization">
+<h1>Single-Cell Data Integration and Annotation Standardization<a class="headerlink" href="#Single-Cell-Data-Integration-and-Annotation-Standardization" title="Link to this heading"></a></h1>
+<section id="SUMMARY">
+<h2>SUMMARY<a class="headerlink" href="#SUMMARY" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Initialize environment and load multiple source datasets (DISCO Blood, DISCO Tonsil, Tonsil Atlas)</p></li>
+<li><p>Harmonize metadata and subset specific project IDs to prevent data duplication</p></li>
+<li><p>Concatenate datasets into a single AnnData object and perform some basic filtering</p></li>
+<li><p>Implement a <strong>Cell Ontology Tree</strong> to standardize hierarchical cell type nomenclature</p></li>
+<li><p>Map fine-grained annotations to broad lineages using a custom tree traversal algorithm</p></li>
+<li><p>Filter rare cell populations and standardized data types for export</p></li>
+</ol>
+<section id="1.-Environment-&amp;-Data-Loading">
+<h3>1. Environment &amp; Data Loading<a class="headerlink" href="#1.-Environment-&-Data-Loading" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">scanpy</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, and custom <code class="docutils literal notranslate"><span class="pre">scToolkit</span></code> libraries</p></li>
+<li><p>Load three distinct <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> datasets:</p>
+<ul>
+<li><p><strong>DISCO Blood:</strong> Reference blood dataset</p></li>
+<li><p><strong>DISCO Tonsil:</strong> Public tonsil samples (subsetted by GSE ID to exclude Tonsil Atlas samples)</p></li>
+<li><p><strong>Tonsil Atlas:</strong> High-quality tonsil atlas dataset</p></li>
+</ul>
+</li>
+<li><p>Clean Tonsil Atlas metadata by removing pre-calculated metrics (e.g., <code class="docutils literal notranslate"><span class="pre">pDNN</span></code>, <code class="docutils literal notranslate"><span class="pre">scrublet</span></code> scores) to ensure compatibility</p></li>
+</ul>
+</section>
+<section id="2.-Data-Merging">
+<h3>2. Data Merging<a class="headerlink" href="#2.-Data-Merging" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Standardize <code class="docutils literal notranslate"><span class="pre">study_category</span></code> labels (<code class="docutils literal notranslate"><span class="pre">disco_blood</span></code>, <code class="docutils literal notranslate"><span class="pre">disco_tonsil</span></code>, <code class="docutils literal notranslate"><span class="pre">tonsil_atlas</span></code>)</p></li>
+<li><p>Concatenate all objects using <code class="docutils literal notranslate"><span class="pre">ad.concat</span></code> (outer join)</p></li>
+<li><p>Filter out genes with extremely low expression (sum &lt; 100 counts) across the merged dataset</p></li>
+</ul>
+</section>
+<section id="3.-Hierarchical-Cell-Type-Mapping-(CellTree)">
+<h3>3. Hierarchical Cell Type Mapping (CellTree)<a class="headerlink" href="#3.-Hierarchical-Cell-Type-Mapping-(CellTree)" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Define a <code class="docutils literal notranslate"><span class="pre">CellTree</span></code> class to manage cell type hierarchies (Parent <span class="math notranslate nohighlight">\(\to\)</span> Child relationships)</p></li>
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">disco_ct_tree.csv</span></code> to build the ontology structure and fix circular dependencies</p></li>
+<li><p>Define <strong>“Special Cells”</strong> (e.g., B cell, T/NK cell, Myeloid cell) to serve as anchors for broad lineage assignment</p></li>
+</ul>
+</section>
+<section id="4.-Annotation-Standardization">
+<h3>4. Annotation Standardization<a class="headerlink" href="#4.-Annotation-Standardization" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Atlas Mapping:</strong> Map manual Tonsil Atlas annotations to the DISCO ontology using a dictionary (<code class="docutils literal notranslate"><span class="pre">map_atlas_ct_to_ct_tree</span></code>)</p></li>
+<li><p><strong>Broad Labeling:</strong></p>
+<ul>
+<li><p>Create <code class="docutils literal notranslate"><span class="pre">ct_broad</span></code>: Map fine-grained labels to the closest “Special Cell” parent using tree traversal</p></li>
+<li><p>Apply specific logic for Tonsil Atlas samples using <code class="docutils literal notranslate"><span class="pre">broad_map</span></code> to ensure lineage consistency (e.g., grouping various B cell states into “B cell”)</p></li>
+</ul>
+</li>
+<li><p><strong>Fine-grained Labeling:</strong> Consolidate original and mapped labels into <code class="docutils literal notranslate"><span class="pre">ct_finegrained_combined</span></code></p></li>
+</ul>
+</section>
+<section id="5.-Rare-Population-Filtering">
+<h3>5. Rare Population Filtering<a class="headerlink" href="#5.-Rare-Population-Filtering" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Check cell type abundance</p></li>
+<li><p>Remove cell categories with <strong>&lt; 200 cells</strong> based on sequencing depth limitations, ensuring analysis focuses on robust populations rather than potential artifacts or noise</p></li>
+</ul>
+</section>
+<section id="6.-Finalization-&amp;-Saving">
+<h3>6. Finalization &amp; Saving<a class="headerlink" href="#6.-Finalization-&-Saving" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fix mixed data types in <code class="docutils literal notranslate"><span class="pre">obs</span></code> (converting objects/NaNs to strings/categories) for H5AD stability</p></li>
+<li><p>Save the merged, annotated, and cleaned object to <code class="docutils literal notranslate"><span class="pre">00_tonsil_blood_DISCO_merged.h5ad</span></code></p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="Imports">
+<h1>Imports<a class="headerlink" href="#Imports" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable autoreloading, delete this for deploying!!!</span>
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">load_ext</span> memory_profiler
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># Provides functions to interact with the operating system</span>
+
+
+<span class="c1"># NOTE: UNCOMMENT IF NO GPU AVAILABLE!</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>  <span class="c1"># Adjust device IDs as per your setup,</span>
+
+<span class="c1"># IBMS Libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_utils</span>
+
+
+<span class="c1"># Some libraries (e.g., decoupler) may require setting rarely used parallelization</span>
+<span class="c1"># backends. This function ensures all common thread settings are configured.</span>
+<span class="c1"># utils.set_threads(10)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/ssd/projects/Proximap/mambaforge/scanpy_stable_25_04_latest/lib/python3.12/site-packages/louvain/__init__.py:54: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools&lt;81.
+  from pkg_resources import get_distribution, DistributionNotFound
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CUDA devices visible: 0
+CPU times: user 5.65 s, sys: 511 ms, total: 6.16 s
+Wall time: 4.81 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Other general libraries that might be hepflull for analysis</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>  <span class="c1"># Enables regular expression matching and text processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>  <span class="c1"># Offers time-related functions (e.g., sleep, timestamps)</span>
+<span class="c1"># in Python, most assignments are references (symbolic links), not copies</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>  <span class="c1"># Creates deep copies of complex objects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>  <span class="c1"># Toolkit for analyzing single-cell gene expression data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>  <span class="c1"># Provides AnnData structure for annotated data matrices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>  <span class="c1"># Simplifies creation of attractive statistical plots</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>  <span class="c1"># Supports numerical operations and N-dimensional arrays</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Offers data structures and tools for data analysis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>  <span class="c1"># Enables plotting and figure customization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>  <span class="c1"># Gene∫Ωrates all k-length combinations of an iterable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>  <span class="c1"># Contains statistical distributions and test functions</span>
+
+
+<span class="c1"># Define rcParams for customization, notebook showing is figure.dpi, reduce to not overload the nootebook sizes</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># &quot;figure.figsize&quot;: (8, 6),  # Figure size in inches</span>
+    <span class="s2">&quot;savefig.dpi&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="c1">#&quot;axes.titlesize&quot;: 16,     # Title font size</span>
+    <span class="c1">#&quot;axes.labelsize&quot;: 14,     # Label font size</span>
+    <span class="c1">#&quot;xtick.labelsize&quot;: 12,    # X-axis tick label size</span>
+    <span class="c1">#&quot;ytick.labelsize&quot;: 12     # Y-axis tick label size</span>
+<span class="p">})</span>
+
+<span class="c1"># Setup matplotlib notebook backend</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Combine-into-one-Adata-object">
+<h1>Combine into one Adata object<a class="headerlink" href="#Combine-into-one-Adata-object" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">blood_adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/disco_blood_v1.1.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:load_h5ad - The Pickled adata.uns file is not in the same directory as the .h5ad. We could not load it. Please ensure the pickled file is in the same directory.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tonsil_adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/disco_tonsil_v01.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:load_h5ad - The Pickled adata.uns file is not in the same directory as the .h5ad. We could not load it. Please ensure the pickled file is in the same directory.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Subsetting the DISCO tonsil to non-Tonsil Atlas samples only</span>
+<span class="n">tonsil_adata</span> <span class="o">=</span> <span class="n">tonsil_adata</span><span class="p">[</span><span class="n">tonsil_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;projectid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+    <span class="p">[</span><span class="s1">&#39;GSE165860&#39;</span><span class="p">,</span> <span class="s1">&#39;GSE139324&#39;</span><span class="p">,</span> <span class="s1">&#39;GSE159674&#39;</span><span class="p">,</span> <span class="s1">&#39;GSE119507&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;GSE139891&#39;</span><span class="p">,</span> <span class="s1">&#39;GSE115006&#39;</span><span class="p">,</span> <span class="s1">&#39;GSE119506&#39;</span><span class="p">])]</span>
+<span class="n">tonsil_adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+View of AnnData object with n_obs × n_vars = 92114 × 32577
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;projectid&#39;, &#39;sample_type&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;
+    var: &#39;gene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;gtex&#39;, &#39;hpa&#39;, &#39;hrt&#39;, &#39;cellminer&#39;, &#39;klijn&#39;, &#39;IG_C_gene&#39;, &#39;IG_C_pseudogene&#39;, &#39;IG_D_gene&#39;, &#39;IG_J_gene&#39;, &#39;IG_J_pseudogene&#39;, &#39;IG_V_gene&#39;, &#39;IG_V_pseudogene&#39;, &#39;TR_C_gene&#39;, &#39;TR_D_gene&#39;, &#39;TR_J_gene&#39;, &#39;TR_J_pseudogene&#39;, &#39;TR_V_gene&#39;, &#39;TR_V_pseudogene&#39;, &#39;lncRNA&#39;, &#39;miRNA&#39;, &#39;protein_coding&#39;, &#39;ribozyme&#39;, &#39;snRNA&#39;, &#39;snoRNA&#39;, &#39;pseudogenes_hg&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;
+    uns: &#39;config&#39;, &#39;ct_colors&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+    varm: &#39;PCs&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tonsil_atlas_adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/tonsil_sc.h5ad&quot;</span><span class="p">)</span>
+<span class="n">tonsil_atlas_adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:load_h5ad - The Pickled adata.uns file is not in the same directory as the .h5ad. We could not load it. Please ensure the pickled file is in the same directory.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 462352 × 37378
+    obs: &#39;orig.ident&#39;, &#39;nCount_RNA&#39;, &#39;nFeature_RNA&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;pct_mt&#39;, &#39;pct_ribosomal&#39;, &#39;pDNN_hashing&#39;, &#39;pDNN_scrublet&#39;, &#39;pDNN_union&#39;, &#39;scrublet_doublet_scores&#39;, &#39;S.Score&#39;, &#39;G2M.Score&#39;, &#39;Phase&#39;, &#39;scrublet_predicted_doublet&#39;, &#39;doublet_score_scDblFinder&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;nCount_RNA3&#39;, &#39;nFeature_RNA3&#39;
+    var: &#39;features&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Remove tonsil atlas bad genes</span>
+<span class="n">tonsil_atlas_adata_specific_genes_to_remove</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="nb">set</span><span class="p">(</span><span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">tonsil_adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">))</span>
+<span class="n">tonsil_atlas_adata</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">tonsil_atlas_adata</span><span class="p">[:,</span> <span class="o">~</span><span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+        <span class="n">tonsil_atlas_adata_specific_genes_to_remove</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">tonsil_atlas_adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 462352 × 32577
+    obs: &#39;orig.ident&#39;, &#39;nCount_RNA&#39;, &#39;nFeature_RNA&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;pct_mt&#39;, &#39;pct_ribosomal&#39;, &#39;pDNN_hashing&#39;, &#39;pDNN_scrublet&#39;, &#39;pDNN_union&#39;, &#39;scrublet_doublet_scores&#39;, &#39;S.Score&#39;, &#39;G2M.Score&#39;, &#39;Phase&#39;, &#39;scrublet_predicted_doublet&#39;, &#39;doublet_score_scDblFinder&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;nCount_RNA3&#39;, &#39;nFeature_RNA3&#39;
+    var: &#39;features&#39;
+</pre></div></div>
+</div>
+<section id="Remove-the-meta-data-or-precalculated-columns-that-are-not-required-here">
+<h2>Remove the meta-data or precalculated columns that are not required here<a class="headerlink" href="#Remove-the-meta-data-or-precalculated-columns-that-are-not-required-here" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">remove_obs_keys</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;pct_mt&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_ribosomal&#39;</span><span class="p">,</span> <span class="s1">&#39;pDNN_hashing&#39;</span><span class="p">,</span> <span class="s1">&#39;pDNN_scrublet&#39;</span><span class="p">,</span> <span class="s1">&#39;pDNN_union&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;scrublet_doublet_scores&#39;</span><span class="p">,</span> <span class="s1">&#39;S.Score&#39;</span><span class="p">,</span> <span class="s1">&#39;G2M.Score&#39;</span><span class="p">,</span> <span class="s1">&#39;Phase&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;scrublet_predicted_doublet&#39;</span><span class="p">,</span> <span class="s1">&#39;doublet_score_scDblFinder&#39;</span><span class="p">,</span> <span class="s1">&#39;orig.ident&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;nCount_RNA&#39;</span><span class="p">,</span> <span class="s1">&#39;nFeature_RNA&#39;</span><span class="p">,</span> <span class="s1">&#39;nCount_RNA3&#39;</span><span class="p">,</span> <span class="s1">&#39;nFeature_RNA3&#39;</span><span class="p">]</span>
+
+<span class="n">tonsil_atlas_obs</span> <span class="o">=</span> <span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">tonsil_atlas_obs</span> <span class="o">=</span> <span class="n">tonsil_atlas_obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">remove_obs_keys</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">tonsil_atlas_obs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;sample_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cause_for_tonsillectomy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tonsil_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;disco_tonsil&quot;</span>
+<span class="n">blood_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;disco_blood&quot;</span>
+<span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tonsil_atlas&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1135831/4153881906.py:1: ImplicitModificationWarning: Trying to modify attribute `.obs` of view, initializing view as actual.
+  tonsil_adata.obs[&#34;study_category&#34;] = &#34;disco_tonsil&#34;
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Concatenate-multiple-adata-objects">
+<h1>Concatenate multiple adata objects<a class="headerlink" href="#Concatenate-multiple-adata-objects" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">min_counts_cells</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">min_counts_genes</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">adatas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">adatas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blood_adata</span><span class="p">)</span>
+<span class="n">adatas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tonsil_atlas_adata</span><span class="p">)</span>
+<span class="n">adatas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tonsil_adata</span><span class="p">)</span>
+
+
+<span class="c1"># Concatenate all the objects</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">adatas</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">,</span> <span class="n">uns_merge</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full tonsil Adata Count matrix shape: </span><span class="si">{</span><span class="n">blood_adata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full tonsil Adata Count matrix shape: </span><span class="si">{</span><span class="n">tonsil_atlas_adata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full tonsil Adata Count matrix shape: </span><span class="si">{</span><span class="n">tonsil_adata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[:,</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_counts_genes</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full Adata Count matrix shape after gene prefiltering: </span><span class="si">{</span><span class="n">adata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/ssd/projects/Proximap/mambaforge/scanpy_stable_25_04_latest/lib/python3.12/site-packages/anndata/_core/merge.py:1434: UserWarning: Only some AnnData objects have `.raw` attribute, not concatenating `.raw` attributes.
+  warn(
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Full tonsil Adata Count matrix shape: (169686, 33538)
+Full tonsil Adata Count matrix shape: (462352, 32577)
+Full tonsil Adata Count matrix shape: (92114, 32577)
+Full Adata Count matrix shape after gene prefiltering: (724152, 23455)
+CPU times: user 19.3 s, sys: 8.75 s, total: 28.1 s
+Wall time: 28.1 s
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 724152 × 23455
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+<section id="DISCO-mapping">
+<h2>DISCO mapping<a class="headerlink" href="#DISCO-mapping" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># One time use only, sorry for the missing docs</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CellTree</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">special_cells</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_type</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cell_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">cell_type</span><span class="si">}</span><span class="s2">&#39; already exists.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">cell_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent</span>
+
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tree can have only one root.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">cell_type</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+
+        <span class="n">all_cells</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">all_parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="n">roots</span> <span class="o">=</span> <span class="n">all_parents</span> <span class="o">-</span> <span class="n">all_cells</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tree must have exactly one root.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">roots</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_cell_n_away_from_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_cell_type</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">start_cell_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">start_cell_type</span><span class="si">}</span><span class="s2">&#39; not found in the tree.&quot;</span><span class="p">)</span>
+
+        <span class="n">current_cell</span> <span class="o">=</span> <span class="n">start_cell_type</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">current_cell</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">current_cell</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find a cell type </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> steps away from &#39;</span><span class="si">{</span><span class="n">start_cell_type</span><span class="si">}</span><span class="s2">&#39; starting from the root.&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">start_cell_type</span>
+
+            <span class="n">current_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">current_cell</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">current_cell</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">]</span>
+
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+
+        <span class="c1"># Check if all nodes are visited</span>
+        <span class="n">all_nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">node</span> <span class="k">for</span> <span class="n">children</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">children</span><span class="p">))</span>
+        <span class="n">all_nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>  <span class="c1"># Include the root node</span>
+        <span class="k">return</span> <span class="n">visited</span> <span class="o">==</span> <span class="n">all_nodes</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_cell_n_away_from_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_cell_type</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tree does not have a root.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Find the path from the root to the start_cell_type</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">find_path</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">find_path</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">find_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">start_cell_type</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">start_cell_type</span><span class="si">}</span><span class="s2">&#39; not found in the tree.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If n is 0, return the root</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+
+        <span class="c1"># Traverse the path to find the nth node from the root</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">path</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find a cell type </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> steps away from &#39;</span><span class="si">{</span><span class="n">start_cell_type</span><span class="si">}</span><span class="s2">&#39; starting from the root.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subtree_up_to_depth_nested_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tree does not have a root.&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                    <span class="n">child_subtree</span> <span class="o">=</span> <span class="n">traverse</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">child_subtree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">subtree</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child_subtree</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">subtree</span>
+
+        <span class="k">return</span> <span class="n">traverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subtree_up_to_depth_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tree does not have a root.&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">subtree_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                    <span class="n">child_subtree</span> <span class="o">=</span> <span class="n">traverse</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">child_subtree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">subtree_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">child_subtree</span><span class="p">)</span>
+
+            <span class="n">subtree_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;cell_type&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">)})</span>
+            <span class="k">return</span> <span class="n">subtree_data</span> <span class="k">if</span> <span class="n">subtree_data</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">subtree_data</span> <span class="o">=</span> <span class="n">traverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">subtree_data</span><span class="p">:</span>
+            <span class="n">subtree_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">subtree_data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">subtree_df</span><span class="p">[[</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">mark_special_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">special_cells</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">special_cells</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">cell</span><span class="si">}</span><span class="s2">&#39; not found in the tree.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">special_cells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_closest_special_cell_on_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tree does not have a root.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cell_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">cell_type</span><span class="si">}</span><span class="s2">&#39; not found in the tree.&quot;</span><span class="p">)</span>
+
+        <span class="n">path_to_root</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Find the path from the cell_type to the root</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">find_path_to_root</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">path_to_root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">find_path_to_root</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">find_path_to_root</span><span class="p">(</span><span class="n">cell_type</span><span class="p">)</span>
+
+        <span class="c1"># Find the closest special cell on the path to the root</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">path_to_root</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_cells</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">node</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_path_to_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tree does not have a root.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cell_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell type &#39;</span><span class="si">{</span><span class="n">cell_type</span><span class="si">}</span><span class="s2">&#39; not found in the tree.&quot;</span><span class="p">)</span>
+
+        <span class="n">path_to_root</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Find the path from the cell_type to the root</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">find_path_to_root</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">path_to_root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">find_path_to_root</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">find_path_to_root</span><span class="p">(</span><span class="n">cell_type</span><span class="p">)</span>
+
+        <span class="c1"># Print the path to the root</span>
+        <span class="n">path_str</span> <span class="o">=</span> <span class="s2">&quot; -&gt; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">path_to_root</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path to root from &#39;</span><span class="si">{</span><span class="n">cell_type</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">path_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_closest_cell_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_cell_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">target_cell_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">target_cell_type</span>
+
+        <span class="c1"># Implementing Smith-Waterman-like search as an example</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">smith_waterman</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+            <span class="c1"># Perform Smith-Waterman alignment here</span>
+            <span class="c1"># This is a simplified placeholder</span>
+            <span class="k">return</span> <span class="n">difflib</span><span class="o">.</span><span class="n">SequenceMatcher</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">ratio</span><span class="p">()</span>
+
+        <span class="c1"># Fallback search: Find the closest cell type based on some criteria</span>
+        <span class="n">closest_cell_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">closest_score</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">cell_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">smith_waterman</span><span class="p">(</span><span class="n">target_cell_type</span><span class="p">,</span> <span class="n">cell_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">closest_score</span><span class="p">:</span>
+                <span class="n">closest_cell_type</span> <span class="o">=</span> <span class="n">cell_type</span>
+                <span class="n">closest_score</span> <span class="o">=</span> <span class="n">score</span>
+
+        <span class="k">return</span> <span class="n">closest_cell_type</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_disconnected_branches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Disconnected branches:&quot;</span><span class="p">)</span>
+        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">children</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cell_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cell_type</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">cell_type</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Test for the CellTree</span>
+<span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
+    <span class="c1"># Example usage:</span>
+    <span class="c1"># Create a tree</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">CellTree</span><span class="p">()</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># A is the root</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Find the cell type that is 2 steps away from &#39;D&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">find_cell_n_away_from_root</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The cell type 2 steps away from &#39;D&#39; is: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="n">tree</span><span class="o">.</span><span class="n">is_connected</span><span class="p">(),</span> <span class="n">tree</span><span class="o">.</span><span class="n">find_cell_n_away_from_cell</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">tree</span><span class="o">.</span><span class="n">find_cell_n_away_from_root</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">subtree_up_to_depth_df</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="n">ct_tree</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;../data/disco_ct_tree.csv&quot;</span><span class="p">)</span>
+<span class="c1"># duplicated line removal</span>
+<span class="n">ct_tree</span> <span class="o">=</span> <span class="n">ct_tree</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">450</span><span class="p">)</span>
+<span class="c1"># Fix ring</span>
+<span class="n">ct_tree</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ct_tree</span><span class="p">[</span><span class="s2">&quot;Cell Type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Memory B cell precursor&quot;</span><span class="p">,</span> <span class="s2">&quot;Parent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Memory B cell&quot;</span>
+<span class="n">ct_tree</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ct_tree</span><span class="p">[</span><span class="s2">&quot;Cell Type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;G2/M phase DZ GC B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;Parent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Cycling DZ GC B cell&quot;</span>
+
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">CellTree</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">ct</span><span class="p">,</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">ct_tree</span><span class="p">[[</span><span class="s2">&quot;Cell Type&quot;</span><span class="p">,</span> <span class="s2">&quot;Parent&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+
+<span class="n">tree</span><span class="o">.</span><span class="n">find_root</span><span class="p">()</span>
+<span class="c1"># Setup the nodes (cell types) to report</span>
+<span class="n">special_cells</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># First layer</span>
+        <span class="s1">&#39;Doublet like cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Embryonic cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Endothelial cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Fibroblast&#39;</span><span class="p">,</span> <span class="s1">&#39;Germ cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Glial cell&#39;</span><span class="p">,</span> <span class="s1">&#39;Immune cell&#39;</span><span class="p">,</span> <span class="s1">&#39;Muscle cell&#39;</span><span class="p">,</span> <span class="s1">&#39;Neuron&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Perivascular cell&#39;</span><span class="p">,</span>
+        <span class="c1"># Lymphocytes</span>
+        <span class="s1">&#39;Lymphoid cell&#39;</span><span class="p">,</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+        <span class="c1"># Myeloyd</span>
+        <span class="s1">&#39;Myeloid cell&#39;</span><span class="p">,</span> <span class="s1">&#39;Dendritic cell&#39;</span><span class="p">,</span> <span class="s1">&#39;Granulocyte&#39;</span><span class="p">,</span> <span class="s1">&#39;Macrophage&#39;</span><span class="p">,</span> <span class="s1">&#39;Monocyte&#39;</span><span class="p">,</span> <span class="s1">&#39;Osteoclast&#39;</span><span class="p">,</span>
+        <span class="c1"># Brain</span>
+        <span class="s1">&#39;Glial cell of brain&#39;</span><span class="p">,</span> <span class="s1">&#39;Glial cell of intestine&#39;</span><span class="p">,</span> <span class="s1">&#39;Muller glia&#39;</span><span class="p">,</span> <span class="s1">&#39;Schwann cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Neuron of brain&#39;</span><span class="p">,</span> <span class="s1">&#39;Neuron of intestine&#39;</span><span class="p">,</span> <span class="s1">&#39;Neuron of retina&#39;</span><span class="p">,</span>
+        <span class="c1"># Epithelial cells</span>
+        <span class="s1">&#39;Endocrine cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Mesothelial cell&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+<span class="n">special_epithelial_cells</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;Epithelial cell of adrenal gland&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of bladder&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of breast&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of eye&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of gingiva&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of intestine&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of kidney&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of liver&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of lung&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of ovary&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of pancreas&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of skin&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of stomach&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of testis&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of thymus&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Epithelial cell of tonsil&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;PDAC related epithelial cell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Cycling epithelial cell&#39;</span><span class="p">,]</span>
+
+<span class="c1"># special_cells = special_cells + special_epithelial_cells</span>
+
+<span class="c1"># find children if you want to add more</span>
+<span class="c1"># tree.children[&#39;Myeloid cell&#39;]</span>
+<span class="c1"># or search the database NOTE: Lowercase search if not desired remove the .lower():</span>
+<span class="c1"># [x for x in ct_tree[&quot;Cell Type&quot;].unique() if &quot;mye&quot; in x.lower()]</span>
+
+<span class="n">tree</span><span class="o">.</span><span class="n">mark_special_cells</span><span class="p">(</span><span class="n">special_cells</span><span class="p">)</span>
+
+<span class="n">tree</span><span class="o">.</span><span class="n">is_connected</span><span class="p">(),</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(True, &#39;Cell Type&#39;)
+</pre></div></div>
+</div>
+</section>
+<section id="Manually-curated-database-cell-types-to-the-DISCO-cell-type-tree-cells">
+<h2>Manually curated database cell-types to the DISCO cell-type tree cells<a class="headerlink" href="#Manually-curated-database-cell-types-to-the-DISCO-cell-type-tree-cells" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">map_atlas_ct_to_ct_tree</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ADAMDEC1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ANGPTL7+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;APOD fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;APOD+PTGDS+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Agonist T&quot;</span><span class="p">:</span> <span class="s2">&quot;Agonist T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C7 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CCL11 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AREG NK&quot;</span><span class="p">:</span> <span class="s2">&quot;NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BGN EC&quot;</span><span class="p">:</span> <span class="s2">&quot;BGN+ EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Breast basal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell of breast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C3 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16 NK&quot;</span><span class="p">:</span> <span class="s2">&quot;CD16 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD56 NK&quot;</span><span class="p">:</span> <span class="s2">&quot;CD56 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD8aa+ T&quot;</span><span class="p">:</span> <span class="s2">&quot;CD8aa+ T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CFD fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CFD+MGP+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COL11A1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CCL19+APOE+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL13 exhausted CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;CXCL13 exhausted CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL13 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL14 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CXCL14+C7+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ciliated cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Multiciliated cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Class switch memory B&quot;</span><span class="p">:</span> <span class="s2">&quot;Class-switched memory B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Collagen+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Collagen+APOD+PTGDS+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Complement factor+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ/LZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;DZ/LZ B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Differentiating Treg&quot;</span><span class="p">:</span> <span class="s2">&quot;Differentiating Treg cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Double negative T&quot;</span><span class="p">:</span> <span class="s2">&quot;Double negative T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Double positive T&quot;</span><span class="p">:</span> <span class="s2">&quot;Double positive T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;F13A1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;F3 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FCRL4 memory B&quot;</span><span class="p">:</span> <span class="s2">&quot;FCRL4 memory B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FRZB fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fetal MHC- Collagen+ arterial EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Fetal MHC- arterial EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fetal MHC- Collagen+ capillary EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Fetal MHC- capillary EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fetal MHC- Collagen+ venous EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Fetal MHC- venous EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;G2M DZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;G2/M phase DZ GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GABRP endometrium&quot;</span><span class="p">:</span> <span class="s2">&quot;GABRP+ epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC committed cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Committed GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMB CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;GZMB CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMK CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;GZMK CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Glia&quot;</span><span class="p">:</span> <span class="s2">&quot;Glial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HAND1 mesoderm&quot;</span><span class="p">:</span> <span class="s2">&quot;Mesodermal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Histone high S phase DZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;Histone high S phase DZ GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IFN responsed trophoblast&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated trophoblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IGFBP1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INF responsed CD56 NK&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated CD56 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INF responsed CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INF responsed T&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INF responsed macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INF responsed naive B&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated naive B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ITGAX+ macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;Macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Immune cell recruitment pancreatic ductal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Pancreatic ductal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KCNN3 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KLRB1 CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;KLRB1 CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KLRB1 cytotoxic CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LUCAT1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;DZ/LZ B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Lactoferrin+ macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;Macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Luminal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Mammary luminal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAIT&quot;</span><span class="p">:</span> <span class="s2">&quot;MAIT cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MHC class II high monocyte/DC/macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;MHCII high CD14 monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MMP1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Memory B&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Memory B precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory B cell precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Memory CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Memory CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Metallothionein+ Collagen- fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Collagen+APOD+PTGDS+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NK&quot;</span><span class="p">:</span> <span class="s2">&quot;NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Naive B&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Naive CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Naive CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Nonproliferative GC B&quot;</span><span class="p">:</span> <span class="s2">&quot;Non-cycling GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Non-class switch memory B&quot;</span><span class="p">:</span> <span class="s2">&quot;Unswitched memory B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ovarian cancer enriched S100A9 MUC16 epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Ovarian cancer enriched S100A9+MUC16+ epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ovarian cancer enriched proliferation epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Ovarian cancer enriched cycling epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ovarian cancer specific LGR5 MUC16 epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Ovarian cancer specific LGR5+MUC16+ epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Ovarian cancer specific carbonic anhydrase+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Ovarian cancer specific EMT cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PIF1+ G2M DZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;PIF1+ G2/M phase DZ GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLA2G2A fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLEKHG2 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POSTN Fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POSTN fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Placenta CAMP+ antimicrobial monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Placenta CAMP+ monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Placenta defensin+ antimicrobial monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Placenta defensin+ monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Plasma Cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pre-B cell&quot;</span><span class="p">:</span> <span class="s2">&quot;PreB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pre-GC B&quot;</span><span class="p">:</span> <span class="s2">&quot;Pre-GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pro-B cell&quot;</span><span class="p">:</span> <span class="s2">&quot;ProB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC B&quot;</span><span class="p">:</span> <span class="s2">&quot;Non-cycling GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation B&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation CXCL13 exhausted CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling CXCL13 exhausted CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation CXCL14 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation DN/DP T&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling DN/DP T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation GC B&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation KRT14 basal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling KRT14 basal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation Leydig cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling Leydig cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation PDAC specific cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling PDAC specific ductal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation Sertoli cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling Sertoli cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation T&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation T/NK&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation extravillous trophoblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling extravillous trophoblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation glia&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling glial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation lactocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling lactocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation mast cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling mast cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation pericyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Pericyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation spermatogonial stem cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling spermatogonial stem cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation thymic epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling thymic epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation villous cytotrophoblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling villous cytotrophoblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;S phase DZ B&quot;</span><span class="p">:</span> <span class="s2">&quot;S phase DZ GC B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLC13A4+ Syncytiotrophoblast&quot;</span><span class="p">:</span> <span class="s2">&quot;SLC13A4+ syncytiotrophoblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLC2A1 macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;Macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SPARCL1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SPP1 Macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;SPP1 macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SRGN arterial EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Arterial EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Smooth muscle cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Vascular smooth muscle cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tfh&quot;</span><span class="p">:</span> <span class="s2">&quot;Tfh cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tonsillar crypt&quot;</span><span class="p">:</span> <span class="s2">&quot;Tonsillar crypt epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Treg&quot;</span><span class="p">:</span> <span class="s2">&quot;Treg cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tuft Cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Tuft cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Unknown fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;XCL1 NK&quot;</span><span class="p">:</span> <span class="s2">&quot;XCL1 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZEB2 mesoderm&quot;</span><span class="p">:</span> <span class="s2">&quot;Mesodermal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;abT (entry)&quot;</span><span class="p">:</span> <span class="s2">&quot;abT (entry) cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ductal/EC doublet like cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Ductal/EC doublet like cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gdT&quot;</span><span class="p">:</span> <span class="s2">&quot;Gamma delta T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HSC&quot;</span><span class="p">:</span> <span class="s2">&quot;Hematopoietic stem cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACTA2+ Arterial EC&quot;</span><span class="p">:</span> <span class="s2">&quot;ACTA2+ arterial EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACTA2+ Capillary EC&quot;</span><span class="p">:</span> <span class="s2">&quot;ACTA2+ capillary EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ADAMDEC1+CXCL14+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;ADAMDEC1+ADAM28+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AFP epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;AFP+ epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ANGPTL7+NRP2+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;APCDD1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CD9+APCDD1+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;APOE fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CCL19+APOE+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C2orf40 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Adipose ITLN1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C1QTNF3+SHISA3+COL14A1+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C7+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CCL19/21 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CCL19+APOE+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CCL2+SFRP2+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;BNC2+ZFPM2+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD14+MHCIIhigh monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;MHCII high CD14 monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD14+MHCIIlow monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;MHCII low CD14 monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16+ NK&quot;</span><span class="p">:</span> <span class="s2">&quot;CD16 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16+ monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;CD16 monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD55+SEMA3C+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CFD+MGP+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD56+ NK&quot;</span><span class="p">:</span> <span class="s2">&quot;CD56 NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CDCA7 proliferation fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CDP&quot;</span><span class="p">:</span> <span class="s2">&quot;Common dendritic progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLDN3 epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;CLDN3+ epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLP&quot;</span><span class="p">:</span> <span class="s2">&quot;Common lymphoid progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLU+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CMP&quot;</span><span class="p">:</span> <span class="s2">&quot;Common myeloid progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COCH fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;COCH+TNN+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CRABP1 mesothelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;CRABP1+ mesothelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL1/2/3 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CXCL14+POSTN+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CXCL14+C7+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cycling fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cytotoxic CD8 T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIAPH3+ macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;Macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Effector/Memory CD4 T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Erythrocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Red blood cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Eye melanocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Melanocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FBLN2+APOD+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FGFBP2 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;FGFBP2+OLFML2A+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fibroblast/Granulosa doublet like cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Doublet like cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;G0S2+PPP1R14A+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GATA4 mesothelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;GATA4+ mesothelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GMP&quot;</span><span class="p">:</span> <span class="s2">&quot;Granulocyte-monocyte progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GREB1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMB+ CD8 T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;GZMB CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMK NK&quot;</span><span class="p">:</span> <span class="s2">&quot;NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMK cytotoxic CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZMK+ CD8 T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;GZMK CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Gamma-delta T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Gamma delta T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IFN-activated T cell&quot;</span><span class="p">:</span> <span class="s2">&quot;INF-activated T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IGFBP6+APOD+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;MFAP5+IGFBP6+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IGFBP6+SFRP4+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;MFAP5+IGFBP6+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LYVE1+ macrophage&quot;</span><span class="p">:</span> <span class="s2">&quot;LYVE1 macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEP&quot;</span><span class="p">:</span> <span class="s2">&quot;Megakaryocyte–erythroid progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MET epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MKI67 proliferation fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MPP&quot;</span><span class="p">:</span> <span class="s2">&quot;Multipotent progenitor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MT2A granulosa cell&quot;</span><span class="p">:</span> <span class="s2">&quot;MT2A+ granulosa cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MTRNR2L1 B&quot;</span><span class="p">:</span> <span class="s2">&quot;MTRNR2L1 B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Metallothionein smooth muscle cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Vascular smooth muscle cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Metallothionein+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Monocyte/DC&quot;</span><span class="p">:</span> <span class="s2">&quot;Monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NR4A3 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OSR1 granulosa cell&quot;</span><span class="p">:</span> <span class="s2">&quot;OSR1+ granulosa cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PAX8 granulosa cell&quot;</span><span class="p">:</span> <span class="s2">&quot;PAX8+ granulosa cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PCOLCE2 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PDGFRA+BMP4+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLA2G2A+IGFBP4+APOC1+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;MFAP5+IGFBP6+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLAC9 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POSTN+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PTGDS+CXCL14+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;CXCL14+C7+ fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation immune cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Immune cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation keratinocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling keratinocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation mesothelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling mesothelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation myeloid cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling myeloid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation perivascular cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling perivascular cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation primordial germ cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling primordial germ cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RNASE1 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Renal epithelial cell - Loop of Henle&quot;</span><span class="p">:</span> <span class="s2">&quot;Renal epithelial cell (Loop of Henle)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Renal epithelial cell - distal tubules&quot;</span><span class="p">:</span> <span class="s2">&quot;Renal epithelial cell (distal tubule)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Renal epithelial cell - proximal tubules&quot;</span><span class="p">:</span> <span class="s2">&quot;Renal epithelial cell (proximal tubule)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Retinal ganglion cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Ganglion cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;S100A+ preNeutrophil (cycling)&quot;</span><span class="p">:</span> <span class="s2">&quot;S100A+ preNeutrophil&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCN7A fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLAMF1+XCL- ILC&quot;</span><span class="p">:</span> <span class="s2">&quot;Lymphoid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLAMF1-XCL+ ILC&quot;</span><span class="p">:</span> <span class="s2">&quot;Lymphoid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SPRR2F pericyte&quot;</span><span class="p">:</span> <span class="s2">&quot;SPRR2F+ pericyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;T/NK&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;T/NK cell (cycling)&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TAC1 granulosa cell&quot;</span><span class="p">:</span> <span class="s2">&quot;TAC1+ granulosa cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TCIM+NRG1+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TFF1 ductal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;TFF1+ ductal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;THY1+ fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TNC fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TUBA1A ductal cell&quot;</span><span class="p">:</span> <span class="s2">&quot;TUBA1A+ ductal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WISP2 fibroblast&quot;</span><span class="p">:</span> <span class="s2">&quot;Fibroblast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cDC2 (cycling)&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling cDC2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;memory B&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;memory CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;naive B&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;naive CD4 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive CD4 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;naive CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;Naive CD8 T cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;neutrophil&quot;</span><span class="p">:</span> <span class="s2">&quot;Neutrophil&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plasma cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preB cell&quot;</span><span class="p">:</span> <span class="s2">&quot;PreB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preB cell (cycling)&quot;</span><span class="p">:</span> <span class="s2">&quot;PreB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proB cell&quot;</span><span class="p">:</span> <span class="s2">&quot;ProB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proB cell (cycling)&quot;</span><span class="p">:</span> <span class="s2">&quot;ProB cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proliferation monocyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proliferation T/NK&quot;</span><span class="p">:</span> <span class="s2">&quot;Cycling T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pre-pDC (lymphoid origin)&quot;</span><span class="p">:</span> <span class="s2">&quot;Lymphoid pre-pDC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pre-pDC (myeloid origin)&quot;</span><span class="p">:</span> <span class="s2">&quot;Myeloid pre-pDC&quot;</span><span class="p">,</span>
+    <span class="c1"># Unknows:</span>
+    <span class="s2">&quot;THY1+ fibroblast-like pericyte&quot;</span><span class="p">:</span> <span class="s2">&quot;Pericyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Squamous epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Endothelial‑mesenchymal transition EC&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;platelet&quot;</span><span class="p">:</span> <span class="s2">&quot;Megakaryocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Gastric mucus-secreting cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Surface mucous cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Merkel cell carcinoma enriched epithelial cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Merkel cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Platelet&quot;</span><span class="p">:</span> <span class="s2">&quot;Megakaryocyte&quot;</span><span class="p">,</span>
+    <span class="c1"># Artifacts</span>
+    <span class="s2">&quot;PAEP endometrium&quot;</span><span class="p">:</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferation unknown&quot;</span><span class="p">:</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_fixed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">map_atlas_ct_to_ct_tree</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/local/jobs/166190/ipykernel_1135831/3156871855.py:257: FutureWarning: The behavior of Series.replace (and DataFrame.replace) with CategoricalDtype is deprecated. In a future version, replace will only be used for cases that preserve the categories. To change the categories, use ser.cat.rename_categories instead.
+  adata.obs[&#34;ct_fixed&#34;] = adata.obs[&#34;ct&#34;].replace(map_atlas_ct_to_ct_tree)
+</pre></div></div>
+</div>
+</section>
+<section id="DISCO-cell-type-tree-cells">
+<h2>DISCO cell-type tree cells<a class="headerlink" href="#DISCO-cell-type-tree-cells" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">broad_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># --- B lineage ---</span>
+    <span class="s2">&quot;NBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;csMBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ncsMBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZ_DZ transition&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NBC early activation&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC-commited NBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Early GC-commited NBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NBC IFN-activated&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NBC CD229+&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Proliferative NBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Early MBC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Precursor MBCs&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC FCRL5+&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived early PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived IgA+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived IgG+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Reactivated proliferative MBCs&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;csMBC FCRL4/5+&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ncsMBC FCRL4/5+&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC DZ Noproli&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- GC B cells ---</span>
+    <span class="s2">&quot;DZ_LZ transition&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ non proliferative&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ late Sphase&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ early Sphase&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ late G2Mphase&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ early G2Mphase&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ cell cycle exit&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZ&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZ_DZ reentry commitment&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZ proliferative&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preGC&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Tfh / T cells ---</span>
+    <span class="s2">&quot;Tfh-LZ-GC&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CM PreTfh&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CM Pre-non-Tfh&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC-Tfh-SAP&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tfh-Mem&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tfr&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tfh T:B border&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GC-Tfh-OX40&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Eff-Tregs&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Eff-Tregs-IL32&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;T-helper&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;T-Trans-Mem&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cycling T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Naive CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Naive&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>   <span class="c1"># ambiguous → Naive B vs T; here likely T</span>
+    <span class="s2">&quot;CM CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RM CD8 activated T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RM CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;T-Eff-Mem&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC recruiters CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCM CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZNF683+ CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EM CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD8 Tf&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IFN+ CD8 T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TCRVδ+ gd T&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAIT/CD161+TRDV2+ gd T-cells&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- NK &amp; ILC ---</span>
+    <span class="s2">&quot;NKp44+ ILC3&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NKp44- ILC3&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ILC1&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16-CD56+ NK&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16-CD56dim NK&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD16+CD56- NK&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Plasma cells / PCs ---</span>
+    <span class="s2">&quot;PB&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PB committed early PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Transitional PB&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgG+ PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgD PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgM+ PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgM+ early PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preMature IgM+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preMature IgG+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Early PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Short lived IgM+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PC committed Light Zone GCBC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgA+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgM+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgG+ PC&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ migratory PC precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Dendritic cells ---</span>
+    <span class="s2">&quot;DC1 precursor&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC1 mature&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;aDC1&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;aDC2&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;aDC3&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC2&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC3&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC4&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DC5&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IL7R DC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IFN1+ PDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- FDC &amp; stromal ---</span>
+    <span class="s2">&quot;FDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cycling FDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COL27A1+ FDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CD14+CD55+ FDC&quot;</span><span class="p">:</span> <span class="s2">&quot;Dendritic cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Monocytes / macrophages / myeloid ---</span>
+    <span class="s2">&quot;Monocytes&quot;</span><span class="p">:</span> <span class="s2">&quot;Monocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;M1 Macrophages&quot;</span><span class="p">:</span> <span class="s2">&quot;Macrophage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SELENOP Slan-like&quot;</span><span class="p">:</span> <span class="s2">&quot;Myeloid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;C1Q Slan-like&quot;</span><span class="p">:</span> <span class="s2">&quot;Myeloid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MMP Slan-like&quot;</span><span class="p">:</span> <span class="s2">&quot;Myeloid cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ITGAX Slan-like&quot;</span><span class="p">:</span> <span class="s2">&quot;Myeloid cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Granulocytes ---</span>
+    <span class="s2">&quot;Neutrophils&quot;</span><span class="p">:</span> <span class="s2">&quot;Granulocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mast&quot;</span><span class="p">:</span> <span class="s2">&quot;Granulocyte&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Epithelium / stromal ---</span>
+    <span class="s2">&quot;Crypt&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Basal cells&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Surface epithelium&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FDCSP epithelium&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Outer surface&quot;</span><span class="p">:</span> <span class="s2">&quot;Epithelial cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Stromal / fibroblast-like ---</span>
+    <span class="s2">&quot;MRC&quot;</span><span class="p">:</span> <span class="s2">&quot;Stromal cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FRC&quot;</span><span class="p">:</span> <span class="s2">&quot;Stromal cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Other / cycling ---</span>
+    <span class="s2">&quot;Cycling&quot;</span><span class="p">:</span> <span class="s2">&quot;Immune cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VEGFA+&quot;</span><span class="p">:</span> <span class="s2">&quot;Immune cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preB&quot;</span><span class="p">:</span> <span class="s2">&quot;B cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preT&quot;</span><span class="p">:</span> <span class="s2">&quot;T/NK cell&quot;</span><span class="p">,</span>
+
+    <span class="c1"># --- Unknowns ---</span>
+    <span class="s2">&quot;unannotated&quot;</span><span class="p">:</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">col1</span> <span class="o">=</span> <span class="s2">&quot;ct_fixed&quot;</span>  <span class="c1"># Disco cell-type tree cell types finegrained</span>
+<span class="n">col2</span> <span class="o">=</span> <span class="s2">&quot;annotation_20230508&quot;</span>  <span class="c1"># Tonsil atlas finegrained column</span>
+<span class="n">unknown</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>  <span class="c1"># label you use for unknowns</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">map_with_tree</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">unknown</span> <span class="k">else</span> <span class="n">tree</span><span class="o">.</span><span class="n">find_closest_special_cell_on_path</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Unified Broad categories for the Disco atlasses</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_broad&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">col1</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">map_with_tree</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="c1"># Unified Broad categories for the Tonsil atlasses</span>
+<span class="n">tonsil_subsetter</span> <span class="o">=</span> <span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;tonsil_atlas&quot;</span><span class="p">)</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tonsil_subsetter</span><span class="p">,</span> <span class="s2">&quot;ct_broad&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tonsil_subsetter</span><span class="p">,</span> <span class="n">col2</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">broad_map</span><span class="p">))</span>
+<span class="c1"># Cast the ct_broad as categorical to for the grouping</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_broad&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_broad&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">col1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tonsil_subsetter</span><span class="p">,</span> <span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tonsil_subsetter</span><span class="p">,</span> <span class="n">col2</span><span class="p">])</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Excourse---Sequencing-depth">
+<h1>Excourse - Sequencing depth<a class="headerlink" href="#Excourse---Sequencing-depth" title="Link to this heading"></a></h1>
+</section>
+<section id="What-is-the-recommended-sequencing-depth-for-Single-Cell-3'-and-5'-Gene-Expression-libraries?">
+<h1>What is the recommended sequencing depth for Single Cell 3’ and 5’ Gene Expression libraries?<a class="headerlink" href="#What-is-the-recommended-sequencing-depth-for-Single-Cell-3'-and-5'-Gene-Expression-libraries?" title="Link to this heading"></a></h1>
+<p><strong>Source:</strong> <a class="reference external" href="https://kb.10xgenomics.com/s/article/115002022743-What-is-the-recommended-sequencing-depth-for-Single-Cell-3-and-5-Gene-Expression-libraries">10x Genomics Knowledge Base</a></p>
+<hr class="docutils" />
+<p><strong>Question:</strong> What is the recommended sequencing depth for Single Cell 3’ and 5’ Gene Expression libraries?</p>
+<p><strong>Answer:</strong> For new sample types, we recommend sequencing a minimum of <strong>20,000 read pairs/cell</strong> for Single Cell 3’ and Single Cell 5’ gene expression libraries.</p>
+<p>The sequencing depth required for a particular experiment, however, will depend on:</p>
+<ul class="simple">
+<li><p>Sample type (different samples will have more or less RNA per cell)</p></li>
+<li><p>The experimental question being addressed.</p></li>
+</ul>
+<p>After sequencing, the <strong>‘Sequencing Saturation’</strong> metric reported by Cell Ranger can be used to optimize sequencing depth for specific sample types.</p>
+<p>For instance, with <strong>50,000 read pairs/cell</strong> for RNA-rich cells such as cell lines, only <strong>30-50% sequencing saturation</strong> may be reached. However, this may be sufficient to cluster your sub-populations of interest during the analysis.</p>
+<p>If you are interested in identifying as many genes as possible in your sample, you may want to sequence deeper to reach around <strong>90% sequencing saturation level.</strong></p>
+<p>For more information, see the <em>Technical Note Resolving Cell Types as a Function of Read Depth and Cell Number.</em></p>
+<p><strong>Products:</strong> Single Cell Gene Expression, Single Cell Immune Profiling</p>
+<hr class="docutils" />
+<div class="line-block">
+<div class="line">In our dataset, the <strong>Tonsil Atlas</strong> shows a maximum mean sequencing depth</div>
+<div class="line">of approximately <strong>25,000 reads per cell</strong>, which is generally sufficient</div>
+<div class="line">for identifying <strong>broad immune lineages</strong>.</div>
+</div>
+<div class="line-block">
+<div class="line">However, this depth is <strong>not optimal for resolving fine subpopulations</strong>,</div>
+<div class="line">as lower sequencing saturation limits the detection of lowly expressed genes</div>
+<div class="line">that are often crucial for distinguishing closely related cell states.</div>
+</div>
+<div class="line-block">
+<div class="line">Therefore, while the overall lineage structure can be trusted,</div>
+<div class="line">the <strong>subpopulation-level resolution in the DISCO dataset</strong> should be</div>
+<div class="line">interpreted with caution.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vc</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">vc</span><span class="p">[</span><span class="n">vc</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ct_finegrained_combined
+cDC2                               189
+aDC3                               187
+Cycling                            185
+Double negative T cell             172
+PB committed early PC precursor    155
+M1 Macrophages                     155
+Early PC precursor                 147
+EM CD8 T                           138
+Surface epithelium                 134
+CD16+CD56- NK                      128
+DZ migratory PC precursor          113
+Cycling myeloid cell               110
+Crypt                              109
+Hematopoietic stem cell            108
+IgM+ early PC precursor            107
+IL7R DC                            106
+DC4                                101
+MRC                                 95
+Transitional PB                     91
+IFN1+ PDC                           85
+Mast                                80
+NKp44- ILC3                         76
+Macrophage                          75
+preB                                75
+Cycling T cell                      73
+Basal cells                         61
+DC3                                 57
+aDC2                                45
+FDCSP epithelium                    44
+mregDC                              42
+CD14+CD55+ FDC                      41
+VEGFA+                              32
+unknown                             30
+FRC                                 30
+GC DZ Noproli                       27
+PreB cell                           22
+preT                                16
+Outer surface                       16
+Epithelial cell                      7
+Light zone follicular DC             5
+Granulocyte                          3
+Tonsillar crypt epithelial cell      3
+Dark zone follicular DC              2
+Name: count, dtype: int64
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Remove cell type categories having less than 200 cells,</span>
+<span class="c1"># because we cannot be certaion about subpopulation annotations for the low sequencing depth data</span>
+<span class="c1"># and it is not the purpose of the study to evaluate rare cell-types (&lt; 1%)</span>
+
+<span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="o">~</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">vc</span><span class="p">[</span><span class="n">vc</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">())]</span>
+<span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+View of AnnData object with n_obs × n_vars = 720675 × 23455
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Save-the-object">
+<h1>Save the object<a class="headerlink" href="#Save-the-object" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you merge multiple studies there might be some columns in the adata.obs</span>
+<span class="c1"># that have multiple data types (dtypes) (nan is a float, but the column has string values)</span>
+<span class="c1"># Unfortunately the h5 cannot save mixed dtypes improperly handled,</span>
+<span class="c1"># this function fixes all these columns to h5 compatible dtypes</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">convert_mixed_types</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">fix_multitype</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is not part of the pipeline, so we use the adata saving functionality</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">write_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/00_tonsil_blood_DISCO_merged.h5ad&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;lzf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 43.5 s, sys: 1.93 s, total: 45.4 s
+Wall time: 46 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../_notebook_list.html" class="btn btn-neutral float-left" title="Tutorial Notebooks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="01_Preprocessing.html" class="btn btn-neutral float-right" title="Single-Cell RNA-seq Preprocessing and QC Pipeline" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

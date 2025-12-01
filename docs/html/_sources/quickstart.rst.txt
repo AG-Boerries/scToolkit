@@ -1,0 +1,144 @@
+Quickstart
+==========
+
+This is the scToolkit Python framework for single-cell analysis.
+
+It currently supports:
+    - Pipelined Gene expression (RNA),
+    - Basic plots for TCR signaling via scirpy
+
+.. _starter:
+
+About scToolkit
+----------------
+
+The framework wraps Scanpy, enforcing strict configuration, reproducibility, and
+support for multi-modal datasets on CPU-only systems and GPU optional via RAPIDS.
+
+The Pipeline revolves around a centralized `config`, automatic stats, and
+modular functions for preprocessing, clustering, enrichment, and plotting.
+
+
+.. _startpoke:
+
+
+Usage
+-----
+
+
+Start by initializing your AnnData object:
+
+.. code::
+
+    import scanpy as sc
+    from scToolkit import sc_code
+    from scToolkit.sc_utils import initialize_cuda
+    from scToolkit.sc_plots import plot_marker_dotplots, plot_umap
+
+    # Load AnnData object
+    adata = sc.read_h5ad("your_file.h5ad")
+
+    # Setup config, stats, logging, and save paths
+    adata = sc_code.setup_adata(
+        adata,
+        param_setup="default",
+        dataset_name="your_dataset",
+        save_path="results/",
+        use_GPU=True,  # GPU initialization is automaticly handled
+    )
+
+    # Quality control and filtering
+    sc_code.all_qc_preprocessing(adata)
+    sc_code.plot_filtering(adata, before=True)
+    adata = sc_code.all_filters(adata)
+    sc_code.plot_filtering(adata, before=False)
+
+    # Clustering and embeddings
+    adata = sc_code.Run_all_prep_steps_clustering(adata)
+    adata = sc_code.cluster_SC_scanpy_like(adata)
+
+    # Downstream: DE, enrichment, scoring
+    adata = sc_code.run_downstream(adata)
+
+    # UMAP + marker visualization
+    plot_umap(adata, key="leiden")
+    plot_marker_dotplots(adata, marker_dict={"CD3": ["CD3D", "CD3E"]})
+
+    # Save
+    sc_code.save_h5ad(adata, "results/adata_processed.h5ad")
+
+    # Load
+    adata = sc_code.load_h5ad("results/adata_processed.h5ad")
+
+For more information on how to start see :mod:`scToolkit.sc_code`.
+
+Key Concepts:
+-------------
+
+- sc_code.setup_adata(adata, \*\*config_kwargs):
+    Initializes `adata` with configuration, stats, and GPU setup.
+    This replaces manual calls to `sc_config.get_config(...)` and associated setup logic.
+
+- adata.uns["config"]:
+    Stores all analysis parameters (e.g., dataset name, paths, clustering settings)
+    as a centralized config object created via sc_config. Used throughout the pipeline
+    for consistent behavior. For more information see :mod:`scToolkit.sc_config`.
+
+    .. attention:: **Crucial:** All steps in `sc_code.run_downstream()`
+            **strictly** rely on the initialized `adata.uns["config"]`.
+            **Ensure** the `adata` object is properly initialized **with**
+            the pipeline *before proceeding*. This allows you to safely
+            checkpoint, reload, and continue analysis across sessions, because
+            all essential data is stored directly within `adata`.
+
+- adata.uns["stats"]:
+    Contains dataset-level summary statistics (e.g., gene/cell counts, QC metrics)
+    computed during initialization. Serves as a reference for filtering and diagnostics.
+
+    .. note:: This is still under developement and currently supports only the
+        filtering (cells and features) and a close to finished cluster stat function.
+
+- adata.uns["genesets"]:
+    A dictionary where keys are gene set names and values are lists of genes.
+    Used for running gene set enrichment methods across the dataset.
+    The intersection betwen the genesets here and the DEGs are automatically
+    saved in the resulting tables.
+
+- adata.uns["ref_dict"] / ["ref_dict_upd"] / ["ref_dict_upd_subs"]:
+    Contain reference gene set definitions and their filtered or updated versions
+    used for enrichment and comparison. This is mainly for the usage plotting these
+    specific genesets in the run_downstream(... ref_dict=ref_dict).
+
+
+Conventions
+-----------
+
+*Argument conventions:*
+  - `key`: single name from `.obs`, `.obsm`, `.var_names`
+  - `keys`: list or dict of keys
+  - `ref`: mapping of group → features (genes or other modality, from `.var_names`)
+  - `ref_dict`: dictionary mapping group → features
+  - `ref_df`: dataframe mapping group → features
+  - `obs_key`: single `.obs` column
+  - `obs_keys`: list of `.obs` columns
+  - `groupby`: categorical `.obs` column used for grouping
+  - `reference`: comparison baseline (unrelated to `ref`)
+  - `genelist`: pending standardization
+
+*Function/method naming conventions:*
+  - `plot_`: plotting functions (with save/export)
+  - `show_`: checkers/preview helpers
+  - `print_`: printing helpers (long lines, dataframes)
+  - `get_`: getters
+  - `extract_`: subsetters/refiners
+  - `calc_`: calculators
+  - `search_`: package or database search helpers
+  - `check_`: validation/checkers
+  - `ref_`: helpers for `ref` (e.g. gene filtering)
+  - `df_`: dataframe converters/handlers
+  - `update_`: update config/nested structures
+  - `replace_`: replace elements
+  - `filter_`, `tag_`: filtering or tagging (QC)
+
+
+

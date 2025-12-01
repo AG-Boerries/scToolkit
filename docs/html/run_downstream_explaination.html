@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sc_code.run_downstream() Guide &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial Notebooks" href="_notebook_list.html" />
+    <link rel="prev" title="scToolkit package" href="scToolkit.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidocs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">sc_code.run_downstream() Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#key-components">Key Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#folder-structure">Folder Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-downstream-configuration">run_downstream Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-parameters">Configuration Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-logic">Plotting Logic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-generation-logic">File Generation Logic</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plot-explainations">Plot Explainations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#umaps">UMAPs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dotplots">Dotplots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#violin-plots">Violin Plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rank-genes-groups">Rank Genes Groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#heatmaps">Heatmaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#csv-excel-data">CSV/Excel Data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_notebook_list.html">Tutorial Notebooks</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">sc_code.run_downstream() Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/run_downstream_explaination.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sc-code-run-downstream-guide">
+<h1>sc_code.run_downstream() Guide<a class="headerlink" href="#sc-code-run-downstream-guide" title="Link to this heading"></a></h1>
+<p>The results include one folder and one HTML/PDF file. The HTML/PDF file
+(<cite>your_collabpartner_name_etc.html/pdf</cite>) contains a more detailed
+explanation at the beginning.</p>
+<p>For quicker reference, the general explanation is repeated here.</p>
+<section id="key-components">
+<h2>Key Components<a class="headerlink" href="#key-components" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>HTML/PDF Report</strong>: Includes sections for:
+- Cell type estimation.
+- All figure outputs, with file paths.</p></li>
+<li><p><strong>Contents</strong>:
+- Differentially expressed genes (DEGs)
+- Marker genes for cell types
+- Highly Variable Genes (HVGs)
+- Figures: UMAPs, Dotplots, Violinplots</p></li>
+<li><p><strong>File Notes</strong>:
+- File names may be long and specific—feedback welcome.
+- <cite>.csv</cite> files can be provided as <cite>.xlsx</cite>.
+- <cite>.pdf</cite> images can be converted to <cite>.png</cite>.</p></li>
+</ul>
+</section>
+<section id="folder-structure">
+<h2>Folder Structure<a class="headerlink" href="#folder-structure" title="Link to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>├── DEGs - DEG csv files for all, filtered, unfiltered, up and down
+│   ├── all_...filtered.csv
+│   └── per_cluster
+│       ├── DEG csv files per cluster
+│       ├── down
+│       │   └── cluster_..._rna.csv
+│       └── up
+│           └── cluster_..._rna.csv
+├── figures - All Figures.
+│   └── downstream
+│       ├── Dotplots
+│       │   ├── DEG
+│       │   │   └── dotplot_cluster_DEG_dotplot_top10_3.pdf
+│       │   └── markers
+│       │       ├── dotplot_rna_cluster_marker_expression_selected_only_group_activated_cells.pdf
+│       │       └── dotplot_rna_cluster_marker_expression_selected_only_group_Tumor_cell.pdf
+│       ├── UMAP
+│       │   ├── DEG_plots
+│       │   │   └── umap_..._DEGs_discretized.pdf
+│       │   ├── HVG_plots
+│       │   │   └── umap_top10_highly_variable_discretized.pdf
+│       │   ├── marker_plots
+│       │   │   └── umap_..._markers_discretized.pdf
+│       │   ├── QC_plots
+│       │   │   └── umap_qc.pdf
+│       │   └── umap_leiden_clustering.pdf
+│       └── Violinplots
+│           ├── DEG
+│           │   ├── stacked_violin_cluster_DEG_dotplot_cluster_....pdf
+│           └── markers
+│               └── stacked_violin_stacked_violin_rna_cluster_marker_expression_group_....pdf
+└── markers
+    ├── cell_type_markers.csv
+    └── cell_type_markers_non_overlap.csv  - if there is overlap
+</pre></div>
+</div>
+</section>
+<section id="run-downstream-configuration">
+<h2>run_downstream Configuration<a class="headerlink" href="#run-downstream-configuration" title="Link to this heading"></a></h2>
+<p><cite>run_downstream</cite> uses config settings from <cite>adata.uns[“config”]</cite> to
+generate outputs.</p>
+<section id="configuration-parameters">
+<h3>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>to_plot</cite>: What to visualize</p></li>
+<li><p><cite>to_create</cite>: What to export</p></li>
+<li><p><cite>rank_gene_key</cite>: DEG ranking key</p></li>
+<li><p><cite>rerun_DEG</cite>: Force re-run DEGs</p></li>
+<li><p><cite>with_figure_explaination</cite>: Add figure logs</p></li>
+<li><p><cite>disable_sc_verbosity</cite>: Silence scanpy output</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="plotting-logic">
+<h3>Plotting Logic<a class="headerlink" href="#plotting-logic" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><strong>UMAPs</strong>: Controlled via <cite>to_plot[“down”][“umap”]</cite></p></li>
+<li><p><strong>Dotplots</strong>: <cite>to_plot[“down”][“cluster_dotplot”][“visualize”]</cite></p></li>
+<li><p><strong>Violinplots</strong>: <cite>to_plot[“down”][“cluster_violins”][“visualize”]</cite></p></li>
+<li><p><strong>Rank Genes Groups</strong>: <cite>to_plot[“down”][“rank_genes_groups”][“visualize”]</cite></p></li>
+<li><p><strong>Heatmaps</strong>: <cite>to_plot[“down”][“heatmaps”][“visualize”]</cite></p></li>
+</ol>
+</div></blockquote>
+<p>Each plot type also supports further fine-tuning via subkeys
+(<cite>marker_mod</cite>, <cite>marker_subs_mod</cite>, <cite>n_DEGs</cite>, etc.)</p>
+</section>
+<section id="file-generation-logic">
+<h3>File Generation Logic<a class="headerlink" href="#file-generation-logic" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>DEG CSVs</strong>: <cite>to_create[“down”][“DEG_csv”][“create”]</cite></p></li>
+<li><p><strong>Marker CSVs</strong>: <cite>to_create[“down”][“marker_csv”][“create”]</cite></p></li>
+<li><p><strong>Cluster stats</strong>: <cite>to_create[“down”][“cluster_stats_csv”][“create”]</cite></p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+<section id="plot-explainations">
+<h2>Plot Explainations<a class="headerlink" href="#plot-explainations" title="Link to this heading"></a></h2>
+<section id="umaps">
+<h3>UMAPs<a class="headerlink" href="#umaps" title="Link to this heading"></a></h3>
+<ul>
+<li><p><strong>Clustering, Density, QC</strong>:</p>
+<ul class="simple">
+<li><p><cite>n_genes</cite>: Total number of genes</p></li>
+<li><p><cite>n_counts</cite>: Total UMI counts</p></li>
+<li><p><cite>n_unique</cite>: Unique UMI counts</p></li>
+<li><p><cite>pct_MT</cite>: Mitochondrial gene %</p></li>
+<li><p><cite>pct_RBS</cite>: Ribosomal gene %</p></li>
+<li><p><cite>pct_MTRBS</cite>: Mitoribosomal gene %</p></li>
+<li><p><cite>pct_HG</cite>, <cite>pct_IG</cite>: Hemoglobin gene %</p></li>
+<li><p><cite>pct_gtex</cite>, <cite>pct_hpa</cite>, <cite>pct_hrt</cite>: Housekeeping genes (samples)</p></li>
+<li><p><cite>pct_kjin</cite>, <cite>pct_cellminer</cite>: Housekeeping genes (cell culture)</p></li>
+<li><p><cite>pct_IG_genes</cite>: Immunoglobulin %</p></li>
+<li><p><cite>pct_TR_genes</cite>: T-cell receptor %</p></li>
+<li><p><cite>pct_protein_coding</cite>: Protein-coding %</p></li>
+<li><p><cite>pct_processed_transcripts</cite>: Processed non-coding</p></li>
+<li><p><cite>pct_TEC_genes</cite>, <cite>pct_pseudogenes</cite>: TEC/pseudogenes</p></li>
+</ul>
+</li>
+<li><p><strong>Expression Mode</strong>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Discretized</strong>: Log-expression &gt; 1 → 1</p></li>
+<li><p><strong>Continuous</strong>: Raw log-expression</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><strong>Gene Types</strong>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>DEG UMAPs</p></li>
+<li><p>Marker gene UMAPs</p></li>
+<li><p>HVG UMAPs</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p><strong>Saved in</strong>: <cite>/downstream/UMAP/</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Leiden + classification clustering</p></li>
+<li><p>Sample/Condition density</p></li>
+<li><p>Quality control metrics</p></li>
+<li><p>DEG gradients  (up &amp; down &amp; discrete/continuous)</p></li>
+<li><p>Marker gradients (up &amp; down &amp; discrete/continuous)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="dotplots">
+<h3>Dotplots<a class="headerlink" href="#dotplots" title="Link to this heading"></a></h3>
+<p>The dotplots are sorted by highly variable rank and the number is conntrolled
+via the config</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>DEGs per cluster</p></li>
+<li><p>Marker genes</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Saved in</strong>: <cite>/downstream/Dotplots/</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>DEGs per cluster</p></li>
+<li><p>Marker genes</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="violin-plots">
+<h3>Violin Plots<a class="headerlink" href="#violin-plots" title="Link to this heading"></a></h3>
+<p><strong>Saved in</strong>: <cite>/downstream/Violinplots/</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>DEGs per cluster</p></li>
+<li><p>Marker genes</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="rank-genes-groups">
+<h3>Rank Genes Groups<a class="headerlink" href="#rank-genes-groups" title="Link to this heading"></a></h3>
+<p><strong>Saved in</strong>: <cite>/downstream/rank_genes_groups/</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Most significant DEGs by cluster</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="heatmaps">
+<h3>Heatmaps<a class="headerlink" href="#heatmaps" title="Link to this heading"></a></h3>
+<p><strong>Saved in</strong>: <cite>/downstream/heatmaps/</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Marker gene heatmaps</p></li>
+<li><p>DEG heatmaps</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="csv-excel-data">
+<h3>CSV/Excel Data<a class="headerlink" href="#csv-excel-data" title="Link to this heading"></a></h3>
+<p><strong>Saved in</strong>: <cite>/downstream/DEGs/</cite>, others</p>
+<ul class="simple">
+<li><p>DEGs + 1 Column for each top-level geneset group in the adata.uns[“genesets”]
+capturing intersections for e.g Hallmarks</p></li>
+<li><p>Marker gene sets</p></li>
+<li><p>Cluster &amp; filtering statistics (TODO: Find notebook for the code)</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scToolkit.html" class="btn btn-neutral float-left" title="scToolkit package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_notebook_list.html" class="btn btn-neutral float-right" title="Tutorial Notebooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,754 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial Notebooks &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Single-Cell Data Integration and Annotation Standardization" href="notebooks/00_Database_curation.html" />
+    <link rel="prev" title="sc_code.run_downstream() Guide" href="run_downstream_explaination.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial Notebooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#database-curation">00_Database_curation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html">Single-Cell Data Integration and Annotation Standardization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#Combine-into-one-Adata-object">Combine into one Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#Concatenate-multiple-adata-objects">Concatenate multiple adata objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#Excourse---Sequencing-depth">Excourse - Sequencing depth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#What-is-the-recommended-sequencing-depth-for-Single-Cell-3'-and-5'-Gene-Expression-libraries?">What is the recommended sequencing depth for Single Cell 3’ and 5’ Gene Expression libraries?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/00_Database_curation.html#Save-the-object">Save the object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-data-integration-and-annotation-standardization">Single-Cell Data Integration and Annotation Standardization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#summary">SUMMARY</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing">01_Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html">Single-Cell RNA-seq Preprocessing and QC Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Load-the-Database-Adata-object">Load the Database Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Preprocess-the-object-for-QC">Preprocess the object for QC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Some-general-keys-you-can-set">Some general keys you can set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Print-some-Stats">Print some Stats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Print-the-time">Print the time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/01_Preprocessing.html#Save-the-Object">Save the Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-rna-seq-preprocessing-and-qc-pipeline">Single-Cell RNA-seq Preprocessing and QC Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">SUMMARY</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#clustering-preprocessing-and-gse">02_clustering_preprocessing_and_GSE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html">Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#Load-the-Adata-object">Load the Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#Object-Preprocessing-for-GSE-and-clustering">Object Preprocessing for GSE and clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#IMPORTANT---THIS-IS-A-MUST-READ!!!!">IMPORTANT - THIS IS A MUST READ!!!!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#Setup:-Genes-to-Exclude-Based-on-Biological-Irrelevance-and-Artifacts">Setup: Genes to Exclude Based on Biological Irrelevance and Artifacts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#GSE-Marker-Scoring">GSE Marker Scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html#Rest">Rest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-gene-set-enrichment-marker-selection-pipeline">Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">SUMMARY</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#search-for-clustering-parameters">03_search_for_clustering_parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html">Single-Cell Clustering &amp; Dimensionality Reduction Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Load-the-Adata-object">Load the Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Clustering">Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Search-for-n_pcs">Search for n_pcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Search-for-n_pcs-and-n_neighbors">Search for n_pcs and n_neighbors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Search-for-leiden-Resolution">Search for leiden Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html#Rest">Rest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-clustering-dimensionality-reduction-pipeline">Single-Cell Clustering &amp; Dimensionality Reduction Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">SUMMARY</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#downstream">04_downstream</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html">Single-Cell RNA-seq DEG Analysis and Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Load-the-Adata-object">Load the Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Run-the-downstream-Preprocessing---DEG-calculation">Run the downstream Preprocessing - DEG calculation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Hallmark-heatmap-per-cluster">Hallmark heatmap per cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Condition-Comparison-plots">Condition Comparison plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Create-dummy-AnnData">Create dummy AnnData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Example:-explicit-group_ref">Example: explicit group_ref</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Example:-groups-and-references">Example: groups and references</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Example:-auto-expand-per-cluster">Example: auto expand per cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Example:-default-sweep-comparing-all-conditions">Example: default sweep comparing all conditions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Volcano-plots">Volcano plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Full-downstream-plots-and-csvs">Full downstream plots and csvs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/04_downstream.html#Rest">Rest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-rna-seq-deg-analysis-and-visualization">Single-Cell RNA-seq DEG Analysis and Visualization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">SUMMARY</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial Notebooks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/_notebook_list.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-notebooks">
+<h1>Tutorial Notebooks<a class="headerlink" href="#tutorial-notebooks" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="notebooks/00_Database_curation.html"><span class="doc">00 Database Curation</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/01_Preprocessing.html"><span class="doc">01 Preprocessing</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/02_clustering_preprocessing_and_GSE.html"><span class="doc">02 Clustering Preprocessing And Gse</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/03_search_for_clustering_parameters.html"><span class="doc">03 Search For Clustering Parameters</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/04_downstream.html"><span class="doc">04 Downstream</span></a></p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════</p>
+<section id="database-curation">
+<h2>00_Database_curation<a class="headerlink" href="#database-curation" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="single-cell-data-integration-and-annotation-standardization">
+<h3>Single-Cell Data Integration and Annotation Standardization<a class="headerlink" href="#single-cell-data-integration-and-annotation-standardization" title="Link to this heading"></a></h3>
+<section id="summary">
+<h4>SUMMARY<a class="headerlink" href="#summary" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Initialize environment and load multiple source datasets (DISCO
+Blood, DISCO Tonsil, Tonsil Atlas)</p></li>
+<li><p>Harmonize metadata and subset specific project IDs to prevent data
+duplication</p></li>
+<li><p>Concatenate datasets into a single AnnData object and perform some
+basic filtering</p></li>
+<li><p>Implement a <strong>Cell Ontology Tree</strong> to standardize hierarchical cell
+type nomenclature</p></li>
+<li><p>Map fine-grained annotations to broad lineages using a custom tree
+traversal algorithm</p></li>
+<li><p>Filter rare cell populations and standardized data types for export</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Environment &amp; Data Loading</p></li>
+</ol>
+<ul class="simple">
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">scanpy</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, and custom <code class="docutils literal notranslate"><span class="pre">scToolkit</span></code>
+libraries</p></li>
+<li><p>Load three distinct <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> datasets:</p>
+<ul>
+<li><p><strong>DISCO Blood:</strong> Reference blood dataset</p></li>
+<li><p><strong>DISCO Tonsil:</strong> Public tonsil samples (subsetted by GSE ID to
+exclude Tonsil Atlas samples)</p></li>
+<li><p><strong>Tonsil Atlas:</strong> High-quality tonsil atlas dataset</p></li>
+</ul>
+</li>
+<li><p>Clean Tonsil Atlas metadata by removing pre-calculated metrics (e.g.,
+<code class="docutils literal notranslate"><span class="pre">pDNN</span></code>, <code class="docutils literal notranslate"><span class="pre">scrublet</span></code> scores) to ensure compatibility</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Data Merging</p></li>
+</ol>
+<ul class="simple">
+<li><p>Standardize <code class="docutils literal notranslate"><span class="pre">study_category</span></code> labels (<code class="docutils literal notranslate"><span class="pre">disco_blood</span></code>,
+<code class="docutils literal notranslate"><span class="pre">disco_tonsil</span></code>, <code class="docutils literal notranslate"><span class="pre">tonsil_atlas</span></code>)</p></li>
+<li><p>Concatenate all objects using <code class="docutils literal notranslate"><span class="pre">ad.concat</span></code> (outer join)</p></li>
+<li><p>Filter out genes with extremely low expression (sum &lt; 100 counts)
+across the merged dataset</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>Hierarchical Cell Type Mapping (CellTree)</p></li>
+</ol>
+<ul class="simple">
+<li><p>Define a <code class="docutils literal notranslate"><span class="pre">CellTree</span></code> class to manage cell type hierarchies (Parent
+<span class="math notranslate nohighlight">\(\to\)</span> Child relationships)</p></li>
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">disco_ct_tree.csv</span></code> to build the ontology structure and fix
+circular dependencies</p></li>
+<li><p>Define <strong>“Special Cells”</strong> (e.g., B cell, T/NK cell, Myeloid cell) to
+serve as anchors for broad lineage assignment</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Annotation Standardization</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Atlas Mapping:</strong> Map manual Tonsil Atlas annotations to the DISCO
+ontology using a dictionary (<code class="docutils literal notranslate"><span class="pre">map_atlas_ct_to_ct_tree</span></code>)</p></li>
+<li><p><strong>Broad Labeling:</strong></p>
+<ul>
+<li><p>Create <code class="docutils literal notranslate"><span class="pre">ct_broad</span></code>: Map fine-grained labels to the closest “Special
+Cell” parent using tree traversal</p></li>
+<li><p>Apply specific logic for Tonsil Atlas samples using <code class="docutils literal notranslate"><span class="pre">broad_map</span></code> to
+ensure lineage consistency (e.g., grouping various B cell states
+into “B cell”)</p></li>
+</ul>
+</li>
+<li><p><strong>Fine-grained Labeling:</strong> Consolidate original and mapped labels into
+<code class="docutils literal notranslate"><span class="pre">ct_finegrained_combined</span></code></p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Rare Population Filtering</p></li>
+</ol>
+<ul class="simple">
+<li><p>Check cell type abundance</p></li>
+<li><p>Remove cell categories with <strong>&lt; 200 cells</strong> based on sequencing depth
+limitations, ensuring analysis focuses on robust populations rather
+than potential artifacts or noise</p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>Finalization &amp; Saving</p></li>
+</ol>
+<ul class="simple">
+<li><p>Fix mixed data types in <code class="docutils literal notranslate"><span class="pre">obs</span></code> (converting objects/NaNs to
+strings/categories) for H5AD stability</p></li>
+<li><p>Save the merged, annotated, and cleaned object to
+<code class="docutils literal notranslate"><span class="pre">00_tonsil_blood_DISCO_merged.h5ad</span></code></p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════</p>
+</section>
+</section>
+</section>
+<section id="preprocessing">
+<h2>01_Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="single-cell-rna-seq-preprocessing-and-qc-pipeline">
+<h3>Single-Cell RNA-seq Preprocessing and QC Pipeline<a class="headerlink" href="#single-cell-rna-seq-preprocessing-and-qc-pipeline" title="Link to this heading"></a></h3>
+<section id="id1">
+<h4>SUMMARY<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Initialize environment and load merged single-cell AnnData object</p></li>
+<li><p>Configure analysis parameters and define marker sets of interest</p></li>
+<li><p>Perform biological pre-filtering (Erythrocytes &amp; Secreting cells)</p></li>
+<li><p>Execute iterative QC refinement for Cells (<code class="docutils literal notranslate"><span class="pre">obs</span></code>) and Genes
+(<code class="docutils literal notranslate"><span class="pre">var</span></code>)</p></li>
+<li><p>Visualize QC metrics stratified by study metadata</p></li>
+<li><p>Apply filtering, clean metadata, and save preprocessed object</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Environment &amp; Data Loading</p></li>
+</ol>
+<ul class="simple">
+<li><p>Load libraries and configure GPU/threading settings</p></li>
+<li><p>Load the merged raw database (<code class="docutils literal notranslate"><span class="pre">00_tonsil_blood_DISCO_merged.h5ad</span></code>)</p></li>
+<li><p>Define plotting parameters (<code class="docutils literal notranslate"><span class="pre">rcParams</span></code>) for high-quality figures</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Configuration &amp; Marker Setup</p></li>
+</ol>
+<ul class="simple">
+<li><p>Initialize <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code> via <code class="docutils literal notranslate"><span class="pre">sc_code.setup_adata</span></code> to
+centralize parameters</p></li>
+<li><p>Define specific immune marker lists (T cells, B cells, NK, Myeloid)
+for downstream validation</p></li>
+<li><p>Set experiment-specific metadata (organism, dataset name, save paths)</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>Biological Heuristic Filtering</p></li>
+</ol>
+<ul class="simple">
+<li><p>Set initial broad QC thresholds for mitochondrial content and counts</p></li>
+<li><p>Subset data to remove likely misannotated cell types based on
+biological logic:</p>
+<ul>
+<li><p>Remove Erythrocytes (Hb genes)</p></li>
+<li><p>Remove specific Secreting cells based on fine-grained labels and
+protein coding percentage</p></li>
+</ul>
+</li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Stratified QC Visualization</p></li>
+</ol>
+<ul class="simple">
+<li><p>Generate violin plots to identify outliers across different metadata
+levels:</p>
+<ul>
+<li><p><strong>Sample Type</strong> (Disease/Condition)</p></li>
+<li><p><strong>Study Category</strong> (Database/Source)</p></li>
+<li><p><strong>Platform</strong> (Assay protocol)</p></li>
+</ul>
+</li>
+<li><p>Customize <code class="docutils literal notranslate"><span class="pre">keys_for_qc</span></code> to focus on specific metrics (e.g.,
+<code class="docutils literal notranslate"><span class="pre">pct_HK_gtex</span></code>, <code class="docutils literal notranslate"><span class="pre">pct_MT</span></code>)</p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Cell-Level (Obs) QC Refinement</p></li>
+</ol>
+<ul class="simple">
+<li><p>Iteratively visualize upper and lower distributions of QC metrics</p></li>
+<li><p>Refine filtering thresholds for:</p>
+<ul>
+<li><p><strong>Upper bounds:</strong> Doublets/outliers (Max genes, Max counts, Max MT%)</p></li>
+<li><p><strong>Lower bounds:</strong> Low-quality cells (Min genes, Min counts, Min
+unique, Min RBS%)</p></li>
+</ul>
+</li>
+<li><p>Tag cells using <code class="docutils literal notranslate"><span class="pre">sc_code.all_filters_tagging</span></code></p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>Gene-Level (Var) QC Refinement</p></li>
+</ol>
+<ul class="simple">
+<li><p>Calculate highly variable genes and bin rankings</p></li>
+<li><p>Visualize gene metrics to determine expression cutoffs</p></li>
+<li><p>Refine thresholds for minimum counts and cell prevalence to reduce
+noise</p></li>
+</ul>
+<ol class="arabic simple" start="7">
+<li><p>Object Cleaning &amp; Finalization</p></li>
+</ol>
+<ul class="simple">
+<li><p>Apply boolean masks to physically subset the AnnData object
+(<code class="docutils literal notranslate"><span class="pre">good_quality</span></code>)</p></li>
+<li><p>Remove specific poor-quality clinical samples (e.g., specific tonsil
+surgeries)</p></li>
+<li><p>Configure <code class="docutils literal notranslate"><span class="pre">sample_n_condition_keys</span></code> for downstream density plotting</p></li>
+<li><p>Print dataset statistics (cell counts, crosstabs) and execution time</p></li>
+</ul>
+<ol class="arabic simple" start="8">
+<li><p>Saving</p></li>
+</ol>
+<ul class="simple">
+<li><p>Save the fully preprocessed and filtered AnnData object to <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code>
+(<code class="docutils literal notranslate"><span class="pre">01_tonsil_blood_DISCO_preprocessed.h5ad</span></code>) with compression</p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════</p>
+</section>
+</section>
+</section>
+<section id="clustering-preprocessing-and-gse">
+<h2>02_clustering_preprocessing_and_GSE<a class="headerlink" href="#clustering-preprocessing-and-gse" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="single-cell-gene-set-enrichment-marker-selection-pipeline">
+<h3>Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline<a class="headerlink" href="#single-cell-gene-set-enrichment-marker-selection-pipeline" title="Link to this heading"></a></h3>
+<section id="id2">
+<h4>SUMMARY<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Load the preprocessed AnnData object and configure computing
+resources.</p></li>
+<li><p>Remove specific gene families (MT, RBS, hemoglobin) to improve
+clustering signal.</p></li>
+<li><p>Execute normalization, log-transformation, and scaling.</p></li>
+<li><p>Iteratively query a combined reference database (PanglaoDB,
+CellMarker, etc.) to curate cell-type specific gene signatures.</p></li>
+<li><p>Run Over-Representation Analysis (ORA) using <code class="docutils literal notranslate"><span class="pre">decoupler</span></code> to score
+cell identity probabilities.</p></li>
+<li><p>Benchmarking selected marker sets against the global database using
+Jaccard Similarity indices.</p></li>
+<li><p>Generate dual-axis plots comparing marker set similarity and size to
+ensure robustness.</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Gene Filtering &amp; Preprocessing</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Configuration:</strong> Access
+<code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;qc&quot;][&quot;gene_identifiers&quot;]</span></code> to define gene sets.</p></li>
+<li><p><strong>Exclusion Criteria:</strong> Remove genes related to:</p>
+<ul>
+<li><p><strong>Energy/Stress:</strong> Mitochondrial (<code class="docutils literal notranslate"><span class="pre">MT</span></code>) and Ribosomal (<code class="docutils literal notranslate"><span class="pre">RBS</span></code>)
+genes (often drive technical batch effects).</p></li>
+<li><p><strong>Artifacts:</strong> Hemoglobin (<code class="docutils literal notranslate"><span class="pre">HG</span></code>) and Pseudogenes.</p></li>
+</ul>
+</li>
+<li><p><strong>Execution:</strong> Run <code class="docutils literal notranslate"><span class="pre">sc_code.Run_all_prep_steps_clustering</span></code> to
+normalize, log-transform, and scale the data (results stored in
+<code class="docutils literal notranslate"><span class="pre">adata.X</span></code>).</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Curated Marker Selection</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Database Loading:</strong> Load a massive <code class="docutils literal notranslate"><span class="pre">combined_database</span></code> containing
+markers from multiple public repositories.</p></li>
+<li><p><strong>Iterative Querying:</strong> Use <code class="docutils literal notranslate"><span class="pre">sc_utils.search_database</span></code> to find
+markers for specific lineages:</p>
+<ul>
+<li><p><strong>Immune:</strong> T cells, B cells, NK cells, Macrophages, Dendritic
+cells, Plasma cells.</p></li>
+<li><p><strong>Structural:</strong> Endothelial cells.</p></li>
+<li><p><strong>States:</strong> Activated vs. Exhausted phenotypes.</p></li>
+</ul>
+</li>
+<li><p><strong>Scoring:</strong> Use
+<code class="docutils literal notranslate"><span class="pre">sc_utils.get_element_and_counts_with_positional_sum</span></code> to rank genes
+based on frequency and specificity across databases.</p></li>
+<li><p><strong>Storage:</strong> Compile selected top <span class="math notranslate nohighlight">\(N\)</span> genes (default 20) into
+<code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;genesets&quot;][&quot;cell_type_markers&quot;]</span></code>.</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>Decoupler ORA Scoring</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Layer Switching:</strong> Switch <code class="docutils literal notranslate"><span class="pre">adata.X</span></code> to <code class="docutils literal notranslate"><span class="pre">log2norm_counts</span></code> (ORA
+requires normalized, non-negative data, not scaled Z-scores).</p></li>
+<li><p><strong>Enrichment:</strong> Run <code class="docutils literal notranslate"><span class="pre">sc_code.run_decoupler</span></code> using the curated
+<code class="docutils literal notranslate"><span class="pre">gse_marker_dict</span></code>.</p></li>
+<li><p><strong>Cleanup:</strong> Reset <code class="docutils literal notranslate"><span class="pre">adata.X</span> <span class="pre">=</span> <span class="pre">None</span></code> to optimize memory usage
+(removing the dense scaled matrix).</p></li>
+<li><p><strong>Save:</strong> Export intermediate object to
+<code class="docutils literal notranslate"><span class="pre">02_tonsil_blood_DISCO_clustering_preprocessed.h5ad</span></code>.</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Validation: Jaccard Similarity Benchmarking</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Objective:</strong> Validate that the selected marker sets are
+representative and distinct compared to the rest of the database.</p></li>
+<li><p><strong>Metric:</strong> Calculate <strong>Jaccard Index</strong> (Intersection over Union)
+between:</p>
+<ol class="arabic simple">
+<li><p><strong>Our Method vs. Rest:</strong> How similar our selected markers are to
+the remaining database entries.</p></li>
+<li><p><strong>Refined Groups:</strong> Internal consistency within the database.</p></li>
+</ol>
+</li>
+<li><p><strong>Logic:</strong></p>
+<ul>
+<li><p>Computes overlap counts, removed genes, and kept genes.</p></li>
+<li><p>Identifies if the selected markers capture the core identity of the
+cell type better than random database subsets.</p></li>
+</ul>
+</li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Validation Visualization</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Plotting:</strong> Generate complex bar plots for each cell type.</p>
+<ul>
+<li><p><strong>Primary Axis:</strong> Jaccard Similarity score (Bar).</p></li>
+<li><p><strong>Secondary Axis:</strong> Gene Set Size (Line).</p></li>
+</ul>
+</li>
+<li><p><strong>Interpretation:</strong> Compares “Our Method” against the top 200 similar
+gene sets to visualize performance ranking.</p></li>
+<li><p><strong>Export:</strong> Saves high-resolution PDFs to <code class="docutils literal notranslate"><span class="pre">../Figures/barplots</span></code>.</p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════</p>
+</section>
+</section>
+</section>
+<section id="search-for-clustering-parameters">
+<h2>03_search_for_clustering_parameters<a class="headerlink" href="#search-for-clustering-parameters" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="single-cell-clustering-dimensionality-reduction-pipeline">
+<h3>Single-Cell Clustering &amp; Dimensionality Reduction Pipeline<a class="headerlink" href="#single-cell-clustering-dimensionality-reduction-pipeline" title="Link to this heading"></a></h3>
+<section id="id3">
+<h4>SUMMARY<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Initialize environment and load the preprocessed AnnData object</p></li>
+<li><p>Perform Principal Component Analysis (PCA) and determine optimal
+components</p></li>
+<li><p>Calculate cell-type activity scores (ORA) for UMAP evaluation</p></li>
+<li><p>Execute grid search for UMAP hyperparameters (<code class="docutils literal notranslate"><span class="pre">n_neighbors</span></code>,
+<code class="docutils literal notranslate"><span class="pre">min_dist</span></code>)</p></li>
+<li><p>Optimize Leiden clustering resolution for broad cell type definition</p></li>
+<li><p>Finalize neighborhood graph and embeddings based on selected
+parameters</p></li>
+<li><p>Validate clustering via Jaccard similarity, QC metrics, and marker
+gene plots</p></li>
+<li><p>Save the final clustered object</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Environment &amp; Data Loading</p></li>
+</ol>
+<ul class="simple">
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">scToolkit</span></code> and other libraries</p></li>
+<li><p>Load <code class="docutils literal notranslate"><span class="pre">02_tonsil_blood_DISCO_clustering_preprocessed.h5ad</span></code></p></li>
+<li><p><strong>Note on Determinism:</strong> Acknowledge that GPU-accelerated methods
+(UMAP) are non-deterministic; parameters must be saved, or embeddings
+explicitly stored to ensure reproducibility.</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>PCA &amp; Variance Analysis</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Data Prep:</strong> Set <code class="docutils literal notranslate"><span class="pre">adata.X</span></code> to the <code class="docutils literal notranslate"><span class="pre">scaled</span></code> layer (Z-scores) for
+PCA.</p></li>
+<li><p><strong>Execution:</strong> Run PCA via <code class="docutils literal notranslate"><span class="pre">sc_code.cluster_SC_scanpy_like</span></code>.</p></li>
+<li><p><strong>Component Selection:</strong> Use
+<code class="docutils literal notranslate"><span class="pre">sc_code.collect_n_pcs_for_variance_sums</span></code> to find the number of PCs
+explaining 85–99% variance.</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>Pre-computation for Evaluation</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Objective:</strong> Generate labels to evaluate UMAP separation during
+hyperparameter tuning.</p></li>
+<li><p><strong>Method:</strong> Use <code class="docutils literal notranslate"><span class="pre">sc_utils.add_cell_type_idxmax_from_significant</span></code>
+with <code class="docutils literal notranslate"><span class="pre">method=&quot;ora&quot;</span></code> (Over-Representation Analysis).</p></li>
+<li><p><strong>Result:</strong> Create <code class="docutils literal notranslate"><span class="pre">cell_type_estimation_idxmax_ora</span></code> in <code class="docutils literal notranslate"><span class="pre">obs</span></code> to
+color-code cells by their predicted identity (e.g., T cells, B cells)
+based on marker enrichment.</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>UMAP Hyperparameter Tuning</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Grid Search:</strong> Run <code class="docutils literal notranslate"><span class="pre">sc_code.search_for_neighbor_params</span></code> to test
+combinations of:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_pcs</span></code>: [4, 14, 24]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_neighbors</span></code>: [15, 25, 50, 75]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_dist</span></code>: [0.2, 0.3, 0.5]</p></li>
+</ul>
+</li>
+<li><p><strong>Evaluation Criteria:</strong></p>
+<ul>
+<li><p><strong>Batch Effect:</strong> Do samples from different studies overlap?</p></li>
+<li><p><strong>Biological Structure:</strong> Do known cell types (from ORA scores)
+cluster logically without artificial fragmentation?</p></li>
+</ul>
+</li>
+<li><p><strong>Selection:</strong> Optimal parameters identified as <strong>``n_pcs=4``,
+``n_neighbors=50``, ``min_dist=0.3``</strong> for our use case.</p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Leiden Resolution Search</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Grid Search:</strong> Use <code class="docutils literal notranslate"><span class="pre">sc_code.search_for_leiden_resolution</span></code> to test
+resolutions between 0.01 and 0.02.</p></li>
+<li><p><strong>Objective:</strong> Find a resolution that yields a stable number of
+clusters corresponding to major lineages (immune vs. granulocytes).</p></li>
+<li><p><strong>Selection:</strong> <strong>Resolution 0.012</strong> selected for broad clustering.</p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>Final Graph Construction</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Parameter Application:</strong> Update <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code> with the
+chosen values.</p></li>
+<li><p><strong>Re-run:</strong> Execute <code class="docutils literal notranslate"><span class="pre">sc_code.cluster_SC_scanpy_like</span></code> with
+<code class="docutils literal notranslate"><span class="pre">run_neighbors=True</span></code> to build the deterministic neighborhood graph
+using the optimized parameters.</p></li>
+<li><p><strong>Embedding Storage:</strong> Overwrite <code class="docutils literal notranslate"><span class="pre">adata.obsm[&quot;X_umap&quot;]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">adata.obs[&quot;leiden&quot;]</span></code> with the best results from the search
+dictionaries to ensure the visual output matches the selected
+parameters.</p></li>
+</ul>
+<ol class="arabic simple" start="7">
+<li><p>Validation &amp; Visualization</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Density Plots:</strong> Visualize distribution of <code class="docutils literal notranslate"><span class="pre">tissue</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sample_type</span></code> to confirm lack of batch effects.</p></li>
+<li><p><strong>Jaccard Similarity:</strong> Plot a heatmap comparing <code class="docutils literal notranslate"><span class="pre">ct_broad</span></code> (ground
+truth/reference) vs. <code class="docutils literal notranslate"><span class="pre">cell_type_estimation_idxmax_ora</span></code> to validate
+cluster identities.</p></li>
+<li><p><strong>Marker Genes:</strong> Plot UMAPs for canonical markers (e.g., <em>MS4A1</em>,
+<em>CD3D</em>, <em>ITGAX</em>) to biologically verify cluster identities.</p></li>
+</ul>
+<ol class="arabic simple" start="8">
+<li><p>Saving</p></li>
+</ol>
+<ul class="simple">
+<li><p>Save the fully clustered and annotated object to
+<code class="docutils literal notranslate"><span class="pre">03_tonsil_blood_DISCO_clustered.h5ad</span></code>.</p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════</p>
+</section>
+</section>
+</section>
+<section id="downstream">
+<h2>04_downstream<a class="headerlink" href="#downstream" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="single-cell-rna-seq-deg-analysis-and-visualization">
+<h3>Single-Cell RNA-seq DEG Analysis and Visualization<a class="headerlink" href="#single-cell-rna-seq-deg-analysis-and-visualization" title="Link to this heading"></a></h3>
+<section id="id4">
+<h4>SUMMARY<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Load and preprocess single-cell AnnData objects for DEG analysis</p></li>
+<li><p>Perform DEG calculations with internal and external references</p></li>
+<li><p>Visualize DEGs using heatmaps, dotplots, split dotplots, violins, and
+UMAPs</p>
+<ul class="simple">
+<li><p>Cluster annotation - per leiden cluster degs</p></li>
+<li><p>Condition-level analysis - Within one cluster condition degs</p></li>
+</ul>
+</li>
+<li><p>Configure automated downstream plotting and export results</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p>Data Loading</p></li>
+</ol>
+<ul class="simple">
+<li><p>Load clustered single-cell <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> file into AnnData object</p></li>
+<li><p>Configure matplotlib display settings</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Preprocessing &amp; Log Transformation</p></li>
+</ol>
+<ul class="simple">
+<li><p>Create unbiased <code class="docutils literal notranslate"><span class="pre">log2_count</span></code> layer to avoid normalization
+distortions</p></li>
+<li><p>Run downstream preprocessing with gene set references</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>DEG Calculation</p></li>
+</ol>
+<ul class="simple">
+<li><p>Compute DEGs across clusters with hierarchical clustering</p></li>
+<li><p>Excursus: compare DEGs against global external references for
+robustness</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Hallmark &amp; Heatmap Analysis</p></li>
+</ol>
+<ul class="simple">
+<li><p>Generate hallmark heatmaps to summarize cluster-specific pathways</p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Condition-Specific DEG Analysis</p></li>
+</ol>
+<ul class="simple">
+<li><p>Run flexible DEG comparisons across clusters and conditions</p></li>
+<li><p>Support for explicit group–reference pairs or automated sweeps</p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>Split Dotplots</p></li>
+</ol>
+<ul class="simple">
+<li><p>Visualize gene expression split by conditions within clusters</p></li>
+<li><p>Explore scaling, normalization, and DEG-only subsetting for clarity</p></li>
+</ul>
+<ol class="arabic simple" start="7">
+<li><p>Dotplot Enhancements</p></li>
+</ol>
+<ul class="simple">
+<li><p>Support hierarchical grouping of marker sets</p></li>
+<li><p>Handle overlapping groups and unique gene identifiers</p></li>
+</ul>
+<ol class="arabic simple" start="8">
+<li><p>Validation &amp; Comparisons</p></li>
+</ol>
+<ul class="simple">
+<li><p>Compare marginal expression differences for candidate genes</p></li>
+<li><p>Explore violin plots and UMAP side-by-side for condition effects</p></li>
+</ul>
+<ol class="arabic simple" start="9">
+<li><p>Automated Downstream Configuration</p></li>
+</ol>
+<ul class="simple">
+<li><p>Configure heatmaps, violins, dotplots, gradients via
+<code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code></p></li>
+<li><p>Enable categorical density plots for selected <code class="docutils literal notranslate"><span class="pre">obs</span></code> keys</p></li>
+</ul>
+<ol class="arabic simple" start="10">
+<li><p>Saving &amp; Reporting</p></li>
+</ol>
+<ul class="simple">
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">sc_code.run_downstream</span></code> for automated plots/CSVs</p></li>
+<li><p>Save processed AnnData with DEG results</p></li>
+</ul>
+<p>═══════════════════════════════════════════════════════════════</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="run_downstream_explaination.html" class="btn btn-neutral float-left" title="sc_code.run_downstream() Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="notebooks/00_Database_curation.html" class="btn btn-neutral float-right" title="Single-Cell Data Integration and Annotation Standardization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

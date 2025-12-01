@@ -1,0 +1,199 @@
+═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════
+
+scanpy\_api package
+===================
+
+- **`sc_code`** — `source <../../../src/scToolkit/sc_code.py>`__
+  Core analysis logic — preprocessing, filtering, clustering, and automated
+  downstream visualizations. Serves as the main entry point for running
+  standardized workflows with robust defaults and integrated error handling.
+
+- **`sc_config`** — `source <../../../src/scToolkit/sc_config.py>`__
+  Centralized config and parameter handling for all analysis steps. Stores
+  key workflow settings (e.g., dataset name, paths, clustering options)
+  in a standard dictionary structure attached to `adata.uns["config"]`.
+  This enables consistent parameter tracking, reproducibility, and versioning
+  without relying on external schema validation libraries.
+
+- **`sc_plots`** — `source <../../../src/scToolkit/sc_plots.py>`__
+  Unified plotting interface for UMAPs, dot plots, violins, heatmaps, ridline, density.
+  Designed for consistency, with shared color handling and auto-labeling
+  across all major marker and enrichment visualizations.
+
+- **`sc_utils`** — `source <../../../src/scToolkit/sc_utils.py>`__
+  Extensive collection of general-purpose utilities for data inspection,
+  stat collection, GPU setup, file system interactions, and result formatting.
+  Includes helpers for safe dictionary access, object copying, marker parsing,
+  random sampling, and unified path management. Central to avoiding duplication
+  and ensuring consistent behavior across the entire codebase.
+
+- **`utils`** — `source <../../../src/scToolkit/utils.py>`__
+  Low-level helper functions — array handling, parsing, normalization,
+  and error-safe lookups.
+
+- **`common_logger`** — `source <../../../src/scToolkit/common_logger.py>`__
+  Unified logging — structured terminal output, verbosity control,
+  and consistent formatting across CLI and notebook environments.
+
+- **`sc_legacy`** — `source <../../../src/scToolkit/sc_legacy.py>`__
+  Deprecated config logic and compatibility layers used to migrate early
+  versions of the framework to the modern, validated config structure.
+
+
+═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════
+
+sc\_code
+---------------------------
+
+
+- **`sc_code`** — `source <../../../src/scToolkit/sc_code.py>`__
+  Core analysis logic — preprocessing, filtering, clustering, and automated
+  downstream visualizations. Serves as the main entry point for running
+  standardized workflows with robust defaults and integrated error handling.
+
+  See the :doc:`run_downstream_explaination` for the run_downstream output explaination.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.sc_code
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+sc\_config
+-----------------------------
+
+- **`sc_config`** — `source <../../../src/scToolkit/sc_config.py>`__
+  Centralized config and parameter handling for all analysis steps. Stores
+  key workflow settings (e.g., dataset name, paths, clustering options)
+  in a standard dictionary structure attached to `adata.uns["config"]`.
+  This enables consistent parameter tracking, reproducibility, and versioning
+  without relying on external schema validation libraries.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.sc_config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+sc\_plots
+----------------------------
+
+- **`sc_plots`** — `source <../../../src/scToolkit/sc_plots.py>`__
+  Unified plotting interface for UMAPs, dot plots, violins, heatmaps, ridline, density.
+  Designed for consistency, with shared color handling and auto-labeling
+  across all major marker and enrichment visualizations.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.sc_plots
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+
+sc\_utils
+----------------------------
+
+- **`sc_utils`** — `source <../../../src/scToolkit/sc_utils.py>`__
+  Extensive collection of general-purpose utilities for data inspection,
+  stat collection, GPU setup, file system interactions, and result formatting.
+  Includes helpers for safe dictionary access, object copying, marker parsing,
+  random sampling, and unified path management. Central to avoiding duplication
+  and ensuring consistent behavior across the entire codebase.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.sc_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+
+utils
+------------------------
+
+- **`utils`** — `source <../../../src/scToolkit/utils.py>`__
+  Low-level helper functions — array handling, parsing, normalization,
+  and error-safe lookups.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+common\_logger
+------------------------
+
+- **`common_logger`** — `source <../../../src/scToolkit/common_logger.py>`__
+  Unified logging — structured terminal output, verbosity control,
+  and consistent formatting across CLI and notebook environments.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.common_logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+sc\_legacy
+------------------------
+
+- **`sc_legacy`** — `source <../../../src/scToolkit/sc_legacy.py>`__
+  Deprecated config logic and compatibility layers used to migrate early
+  versions of the framework to the modern, validated config structure.
+
+══════════════════════════════════════════════════
+
+.. automodule:: scToolkit.sc_legacy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+markers
+--------------------------
+
+.. automodule:: scToolkit.markers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+paths
+------------------------
+
+.. automodule:: scToolkit.paths
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+═══════════════════════════════════════════════════════════════
+
+
+Module contents
+---------------
+
+.. automodule:: scToolkit
+   :members:
+   :undoc-members:
+   :show-inheritance:

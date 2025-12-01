@@ -1,0 +1,56 @@
+# cd /projects/Research/Internal/Proximap/software/code/Christopher/scToolkit/conda
+# source /projects/Research/Internal/Proximap/ssd/mambaforge/mamba_env/mambaforge/bin/activate
+# mamba env create -y -f env_local_25-04.yml -p /ssd/projects/Proximap/mambaforge/scToolkit_25_04
+# conda activate /ssd/projects/Proximap/mambaforge/scToolkit_25_04
+# cd /projects/Research/Internal/Proximap/software/code/Christopher/scToolkit/
+# pip install .
+# python -m ipykernel install --user --name scToolkit_25_04
+name: scToolkit_25_04_latest
+channels:
+  - nvidia
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12.10
+  - leidenalg
+  - jupyterlab
+  - numba=0.60.0
+  - numpy=1.26.4
+  - pip
+  - pip:
+      # Single-cell analysis
+      - decoupler==1.8.0
+      - anndata==0.11.4
+      - scanpy==1.11.1
+      - omnipath==1.0.9
+      - harmonypy
+      - muon==0.1.7
+      - anndata2ri
+
+      # Download utilities
+      - gdown
+      - wget
+      - rapidgzip
+
+      # Visualization / Dash / Plotly ecosystem
+      - plotly
+      - kaleido
+      - dash-daq
+      - dash-bootstrap-components
+
+      # Math / Stats / ML
+      - scikit-misc
+      - scikit-learn-extra
+      - KDEpy
+      - numba-stats
+
+      # R interoperability
+      - rpy2==3.5.16
+
+      # Excel / IO
+      - openpyxl
+
+      # Plotting
+      - distinctipy
+      - marsilea==0.5.4
+      - legendkit

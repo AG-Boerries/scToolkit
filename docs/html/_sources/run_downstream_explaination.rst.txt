@@ -1,0 +1,195 @@
+sc_code.run_downstream() Guide
+==============================
+
+
+The results include one folder and one HTML/PDF file. The HTML/PDF file
+(`your_collabpartner_name_etc.html/pdf`) contains a more detailed
+explanation at the beginning.
+
+For quicker reference, the general explanation is repeated here.
+
+Key Components
+--------------
+
+- **HTML/PDF Report**: Includes sections for:
+  - Cell type estimation.
+  - All figure outputs, with file paths.
+
+- **Contents**:
+  - Differentially expressed genes (DEGs)
+  - Marker genes for cell types
+  - Highly Variable Genes (HVGs)
+  - Figures: UMAPs, Dotplots, Violinplots
+
+- **File Notes**:
+  - File names may be long and specific—feedback welcome.
+  - `.csv` files can be provided as `.xlsx`.
+  - `.pdf` images can be converted to `.png`.
+
+
+Folder Structure
+----------------
+
+
+.. code-block:: text
+
+    ├── DEGs - DEG csv files for all, filtered, unfiltered, up and down
+    │   ├── all_...filtered.csv
+    │   └── per_cluster
+    │       ├── DEG csv files per cluster
+    │       ├── down
+    │       │   └── cluster_..._rna.csv
+    │       └── up
+    │           └── cluster_..._rna.csv
+    ├── figures - All Figures.
+    │   └── downstream
+    │       ├── Dotplots
+    │       │   ├── DEG
+    │       │   │   └── dotplot_cluster_DEG_dotplot_top10_3.pdf
+    │       │   └── markers
+    │       │       ├── dotplot_rna_cluster_marker_expression_selected_only_group_activated_cells.pdf
+    │       │       └── dotplot_rna_cluster_marker_expression_selected_only_group_Tumor_cell.pdf
+    │       ├── UMAP
+    │       │   ├── DEG_plots
+    │       │   │   └── umap_..._DEGs_discretized.pdf
+    │       │   ├── HVG_plots
+    │       │   │   └── umap_top10_highly_variable_discretized.pdf
+    │       │   ├── marker_plots
+    │       │   │   └── umap_..._markers_discretized.pdf
+    │       │   ├── QC_plots
+    │       │   │   └── umap_qc.pdf
+    │       │   └── umap_leiden_clustering.pdf
+    │       └── Violinplots
+    │           ├── DEG
+    │           │   ├── stacked_violin_cluster_DEG_dotplot_cluster_....pdf
+    │           └── markers
+    │               └── stacked_violin_stacked_violin_rna_cluster_marker_expression_group_....pdf
+    └── markers
+        ├── cell_type_markers.csv
+        └── cell_type_markers_non_overlap.csv  - if there is overlap
+
+
+run_downstream Configuration
+----------------------------
+
+`run_downstream` uses config settings from `adata.uns["config"]` to
+generate outputs.
+
+Configuration Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+  - `to_plot`: What to visualize
+  - `to_create`: What to export
+  - `rank_gene_key`: DEG ranking key
+  - `rerun_DEG`: Force re-run DEGs
+  - `with_figure_explaination`: Add figure logs
+  - `disable_sc_verbosity`: Silence scanpy output
+
+Plotting Logic
+^^^^^^^^^^^^^^
+
+  1. **UMAPs**: Controlled via `to_plot["down"]["umap"]`
+  2. **Dotplots**: `to_plot["down"]["cluster_dotplot"]["visualize"]`
+  3. **Violinplots**: `to_plot["down"]["cluster_violins"]["visualize"]`
+  4. **Rank Genes Groups**: `to_plot["down"]["rank_genes_groups"]["visualize"]`
+  5. **Heatmaps**: `to_plot["down"]["heatmaps"]["visualize"]`
+
+Each plot type also supports further fine-tuning via subkeys
+(`marker_mod`, `marker_subs_mod`, `n_DEGs`, etc.)
+
+File Generation Logic
+^^^^^^^^^^^^^^^^^^^^^
+
+  - **DEG CSVs**: `to_create["down"]["DEG_csv"]["create"]`
+  - **Marker CSVs**: `to_create["down"]["marker_csv"]["create"]`
+  - **Cluster stats**: `to_create["down"]["cluster_stats_csv"]["create"]`
+
+Plot Explainations
+------------------
+
+UMAPs
+^^^^^
+
+- **Clustering, Density, QC**:
+
+  - `n_genes`: Total number of genes
+  - `n_counts`: Total UMI counts
+  - `n_unique`: Unique UMI counts
+  - `pct_MT`: Mitochondrial gene %
+  - `pct_RBS`: Ribosomal gene %
+  - `pct_MTRBS`: Mitoribosomal gene %
+  - `pct_HG`, `pct_IG`: Hemoglobin gene %
+  - `pct_gtex`, `pct_hpa`, `pct_hrt`: Housekeeping genes (samples)
+  - `pct_kjin`, `pct_cellminer`: Housekeeping genes (cell culture)
+  - `pct_IG_genes`: Immunoglobulin %
+  - `pct_TR_genes`: T-cell receptor %
+  - `pct_protein_coding`: Protein-coding %
+  - `pct_processed_transcripts`: Processed non-coding
+  - `pct_TEC_genes`, `pct_pseudogenes`: TEC/pseudogenes
+
+- **Expression Mode**:
+
+    - **Discretized**: Log-expression > 1 → 1
+    - **Continuous**: Raw log-expression
+
+- **Gene Types**:
+
+    - DEG UMAPs
+    - Marker gene UMAPs
+    - HVG UMAPs
+
+**Saved in**: `/downstream/UMAP/`
+
+  - Leiden + classification clustering
+  - Sample/Condition density
+  - Quality control metrics
+  - DEG gradients  (up & down & discrete/continuous)
+  - Marker gradients (up & down & discrete/continuous)
+
+Dotplots
+^^^^^^^^
+The dotplots are sorted by highly variable rank and the number is conntrolled
+via the config
+
+  - DEGs per cluster
+  - Marker genes
+
+**Saved in**: `/downstream/Dotplots/`
+
+  - DEGs per cluster
+  - Marker genes
+
+Violin Plots
+^^^^^^^^^^^^
+
+**Saved in**: `/downstream/Violinplots/`
+
+  - DEGs per cluster
+  - Marker genes
+
+Rank Genes Groups
+^^^^^^^^^^^^^^^^^
+
+**Saved in**: `/downstream/rank_genes_groups/`
+
+  - Most significant DEGs by cluster
+
+Heatmaps
+^^^^^^^^
+
+**Saved in**: `/downstream/heatmaps/`
+
+  - Marker gene heatmaps
+  - DEG heatmaps
+
+CSV/Excel Data
+^^^^^^^^^^^^^^
+
+**Saved in**: `/downstream/DEGs/`, others
+
+- DEGs + 1 Column for each top-level geneset group in the adata.uns["genesets"]
+  capturing intersections for e.g Hallmarks
+
+- Marker gene sets
+- Cluster & filtering statistics (TODO: Find notebook for the code)
+

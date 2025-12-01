@@ -1,0 +1,2300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Cell RNA-seq DEG Analysis and Visualization &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Single-Cell Clustering &amp; Dimensionality Reduction Pipeline" href="03_search_for_clustering_parameters.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../_notebook_list.html">Tutorial Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#database-curation">00_Database_curation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#preprocessing">01_Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#clustering-preprocessing-and-gse">02_clustering_preprocessing_and_GSE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#search-for-clustering-parameters">03_search_for_clustering_parameters</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../_notebook_list.html#downstream">04_downstream</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Single-Cell RNA-seq DEG Analysis and Visualization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SUMMARY">SUMMARY</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Load-the-Adata-object">Load the Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-the-downstream-Preprocessing---DEG-calculation">Run the downstream Preprocessing - DEG calculation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Excurs-on-DEG-and-Normalization">Excurs on DEG and Normalization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Caluclate-DEGs">Caluclate DEGs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-DEGs-as-dotplot">Plot DEGs as dotplot</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Hallmark-heatmap-per-cluster">Hallmark heatmap per cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Condition-Comparison-plots">Condition Comparison plots</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Run-the-DEG-calculation-for-the-within-the-clusters-to-compare-conditions">Run the DEG calculation for the within the clusters to compare conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Create-dummy-AnnData">Create dummy AnnData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Example:-explicit-group_ref">Example: explicit group_ref</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Example:-groups-and-references">Example: groups and references</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Example:-auto-expand-per-cluster">Example: auto expand per cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Example:-default-sweep-comparing-all-conditions">Example: default sweep comparing all conditions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Split-Dotplot">Split Dotplot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Violins">Violins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Condition-Umap-side-by-side">Condition Umap side by side</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Volcano-plots">Volcano plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Full-downstream-plots-and-csvs">Full downstream plots and csvs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Rest">Rest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_notebook_list.html#single-cell-rna-seq-deg-analysis-and-visualization">Single-Cell RNA-seq DEG Analysis and Visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../_notebook_list.html">Tutorial Notebooks</a></li>
+      <li class="breadcrumb-item active">Single-Cell RNA-seq DEG Analysis and Visualization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/04_downstream.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Single-Cell-RNA-seq-DEG-Analysis-and-Visualization">
+<h1>Single-Cell RNA-seq DEG Analysis and Visualization<a class="headerlink" href="#Single-Cell-RNA-seq-DEG-Analysis-and-Visualization" title="Link to this heading"></a></h1>
+<section id="SUMMARY">
+<h2>SUMMARY<a class="headerlink" href="#SUMMARY" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Load and preprocess single-cell AnnData objects for DEG analysis</p></li>
+<li><p>Perform DEG calculations with internal and external references</p></li>
+<li><p>Visualize DEGs using heatmaps, dotplots, split dotplots, violins, and UMAPs</p>
+<ul class="simple">
+<li><p>Cluster annotation - per leiden cluster degs</p></li>
+<li><p>Condition-level analysis - Within one cluster condition degs</p></li>
+</ul>
+</li>
+<li><p>Configure automated downstream plotting and export results</p></li>
+</ol>
+<section id="1.-Data-Loading">
+<h3>1. Data Loading<a class="headerlink" href="#1.-Data-Loading" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Load clustered single-cell <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> file into AnnData object</p></li>
+<li><p>Configure matplotlib display settings</p></li>
+</ul>
+</section>
+<section id="2.-Preprocessing-&amp;-Log-Transformation">
+<h3>2. Preprocessing &amp; Log Transformation<a class="headerlink" href="#2.-Preprocessing-&-Log-Transformation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Create unbiased <code class="docutils literal notranslate"><span class="pre">log2_count</span></code> layer to avoid normalization distortions</p></li>
+<li><p>Run downstream preprocessing with gene set references</p></li>
+</ul>
+</section>
+<section id="3.-DEG-Calculation">
+<h3>3. DEG Calculation<a class="headerlink" href="#3.-DEG-Calculation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Compute DEGs across clusters with hierarchical clustering</p></li>
+<li><p>Excursus: compare DEGs against global external references for robustness</p></li>
+</ul>
+</section>
+<section id="4.-Hallmark-&amp;-Heatmap-Analysis">
+<h3>4. Hallmark &amp; Heatmap Analysis<a class="headerlink" href="#4.-Hallmark-&-Heatmap-Analysis" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Generate hallmark heatmaps to summarize cluster-specific pathways</p></li>
+</ul>
+</section>
+<section id="5.-Condition-Specific-DEG-Analysis">
+<h3>5. Condition-Specific DEG Analysis<a class="headerlink" href="#5.-Condition-Specific-DEG-Analysis" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Run flexible DEG comparisons across clusters and conditions</p></li>
+<li><p>Support for explicit group–reference pairs or automated sweeps</p></li>
+</ul>
+</section>
+<section id="6.-Split-Dotplots">
+<h3>6. Split Dotplots<a class="headerlink" href="#6.-Split-Dotplots" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Visualize gene expression split by conditions within clusters</p></li>
+<li><p>Explore scaling, normalization, and DEG-only subsetting for clarity</p></li>
+</ul>
+</section>
+<section id="7.-Dotplot-Enhancements">
+<h3>7. Dotplot Enhancements<a class="headerlink" href="#7.-Dotplot-Enhancements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Support hierarchical grouping of marker sets</p></li>
+<li><p>Handle overlapping groups and unique gene identifiers</p></li>
+</ul>
+</section>
+<section id="8.-Validation-&amp;-Comparisons">
+<h3>8. Validation &amp; Comparisons<a class="headerlink" href="#8.-Validation-&-Comparisons" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Compare marginal expression differences for candidate genes</p></li>
+<li><p>Explore violin plots and UMAP side-by-side for condition effects</p></li>
+</ul>
+</section>
+<section id="9.-Automated-Downstream-Configuration">
+<h3>9. Automated Downstream Configuration<a class="headerlink" href="#9.-Automated-Downstream-Configuration" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Configure heatmaps, violins, dotplots, gradients via <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code></p></li>
+<li><p>Enable categorical density plots for selected <code class="docutils literal notranslate"><span class="pre">obs</span></code> keys</p></li>
+</ul>
+</section>
+<section id="10.-Saving-&amp;-Reporting">
+<h3>10. Saving &amp; Reporting<a class="headerlink" href="#10.-Saving-&-Reporting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">sc_code.run_downstream</span></code> for automated plots/CSVs</p></li>
+<li><p>Save processed AnnData with DEG results</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="Imports">
+<h1>Imports<a class="headerlink" href="#Imports" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable autoreloading, delete this for deploying!!!</span>
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">load_ext</span> memory_profiler
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># Provides functions to interact with the operating system</span>
+
+
+<span class="c1"># NOTE: UNCOMMENT IF NO GPU AVAILABLE!</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>  <span class="c1"># Adjust device IDs as per your setup,</span>
+
+<span class="c1"># IBMS Libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="c1"># Some libraries (e.g., decoupler) may require setting rarely used parallelization</span>
+<span class="c1"># backends. This function ensures all common thread settings are configured.</span>
+<span class="c1"># utils.set_threads(10)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/projects/Research/Internal/Proximap/ssd/envs/scToolkit_check_TD/proximap_stable_28_08_2025/lib/python3.12/site-packages/louvain/__init__.py:54: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools&lt;81.
+  from pkg_resources import get_distribution, DistributionNotFound
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CUDA devices visible: 0
+CPU times: user 9.76 s, sys: 2.73 s, total: 12.5 s
+Wall time: 22.1 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Other general libraries that might be hepflull for analysis</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>  <span class="c1"># Enables regular expression matching and text processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>  <span class="c1"># Offers time-related functions (e.g., sleep, timestamps)</span>
+<span class="c1"># in Python, most assignments are references (symbolic links), not copies</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>  <span class="c1"># Creates deep copies of complex objects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>  <span class="c1"># Toolkit for analyzing single-cell gene expression data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>  <span class="c1"># Provides AnnData structure for annotated data matrices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>  <span class="c1"># Simplifies creation of attractive statistical plots</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>  <span class="c1"># Supports numerical operations and N-dimensional arrays</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Offers data structures and tools for data analysis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>  <span class="c1"># Enables plotting and figure customization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>  <span class="c1"># Generates all k-length combinations of an iterable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>  <span class="c1"># Contains statistical distributions and test functions</span>
+
+<span class="c1"># Define rcParams for customization, notebook showing is figure.dpi, reduce to not overload the nootebook sizes</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># &quot;figure.figsize&quot;: (8, 6),  # Figure size in inches</span>
+    <span class="s2">&quot;savefig.dpi&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="c1">#&quot;axes.titlesize&quot;: 16,     # Title font size</span>
+    <span class="c1">#&quot;axes.labelsize&quot;: 14,     # Label font size</span>
+    <span class="c1">#&quot;xtick.labelsize&quot;: 12,    # X-axis tick label size</span>
+    <span class="c1">#&quot;ytick.labelsize&quot;: 12     # Y-axis tick label size</span>
+<span class="p">})</span>
+
+<span class="c1"># Setup matplotlib notebook backend</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Load-the-Adata-object">
+<h1>Load the Adata object<a class="headerlink" href="#Load-the-Adata-object" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/03_tonsil_blood_DISCO_clustered.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 10.3 s, sys: 1min 13s, total: 1min 23s
+Wall time: 2min 3s
+</pre></div></div>
+</div>
+</section>
+<section id="Run-the-downstream-Preprocessing---DEG-calculation">
+<h1>Run the downstream Preprocessing - DEG calculation<a class="headerlink" href="#Run-the-downstream-Preprocessing---DEG-calculation" title="Link to this heading"></a></h1>
+<section id="Excurs-on-DEG-and-Normalization">
+<h2>Excurs on DEG and Normalization<a class="headerlink" href="#Excurs-on-DEG-and-Normalization" title="Link to this heading"></a></h2>
+<section id="Unbiased-Log-Count-Analysis">
+<h3>Unbiased Log Count Analysis<a class="headerlink" href="#Unbiased-Log-Count-Analysis" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">To analyze <strong>unnormalized log-transformed counts directly</strong>, preserving the raw</div>
+<div class="line">biological signal without distortion from total-count normalization:</div>
+</div>
+<blockquote>
+<div><div class="line-block">
+<div class="line">Methods like <strong>Seurat</strong> default to normalizing each cell to 10,000 total counts.</div>
+<div class="line">This compresses dynamic range so much that log-transformation becomes nearly redundant,</div>
+<div class="line">artificially flattening variability between cells.</div>
+<div class="line">In theory the scaling factor would get canceld out by the logfold chance but the results</div>
+<div class="line">will neverhteless look different.</div>
+</div>
+</div></blockquote>
+<p>Here a short snippet to create log2_counts, by useing the raw <code class="docutils literal notranslate"><span class="pre">counts</span></code> and apply log transformation yourself:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log2_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log2_count&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log2_count&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log2_count&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">downstream_preprocessing</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">ref_dict</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">][</span><span class="s2">&quot;provided_markers&quot;</span><span class="p">]</span>
+    <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;log2_count&quot;</span><span class="p">)</span>  <span class="c1"># &lt;- here use the unbiased log2_count</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="Caluclate-DEGs">
+<h2>Caluclate DEGs<a class="headerlink" href="#Caluclate-DEGs" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 572892 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;, &#39;leiden&#39;, &#39;cell_type_estimation_idxmax_ora&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_&#39;, &#39;activation_estimation_idxmax_ora&#39;, &#39;all_estimation_idxmax_ora&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;, &#39;genes_for_pca&#39;
+    uns: &#39;cell_type_estimation_idxmax_ora_colors&#39;, &#39;cell_type_info&#39;, &#39;ct_broad_colors&#39;, &#39;genesets&#39;, &#39;leiden_colors&#39;, &#39;neighbors&#39;, &#39;pca&#39;, &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;, &#39;ora_estimate&#39;, &#39;ora_estimate_sig_only&#39;, &#39;ora_pvals&#39;
+    varm: &#39;PCs&#39;
+    layers: &#39;counts&#39;, &#39;log2norm_counts&#39;, &#39;norm_counts&#39;, &#39;scaled&#39;
+    obsp: &#39;connectivities&#39;, &#39;distances&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cell_type_markers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Follicular Dendritic Cells</span>
+    <span class="s2">&quot;FDC&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FDCSP&quot;</span><span class="p">,</span> <span class="s2">&quot;CLU&quot;</span><span class="p">,</span> <span class="s2">&quot;CXCL13&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Plasma cells / Plasmablasts</span>
+    <span class="s2">&quot;Plasma&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SDC1&quot;</span><span class="p">,</span> <span class="s2">&quot;CD38&quot;</span><span class="p">,</span> <span class="s2">&quot;MZB1&quot;</span><span class="p">,</span> <span class="s2">&quot;PRDM1&quot;</span><span class="p">,</span> <span class="s2">&quot;XBP1&quot;</span><span class="p">,</span> <span class="s2">&quot;IRF4&quot;</span><span class="p">,</span> <span class="s2">&quot;JCHAIN&quot;</span><span class="p">,</span>
+               <span class="s2">&quot;IGHG1&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHA1&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Naïve B cells</span>
+    <span class="s2">&quot;Naive_B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHD&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHM&quot;</span><span class="p">,</span> <span class="s2">&quot;TCL1A&quot;</span><span class="p">,</span> <span class="s2">&quot;IL4R&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Germinal Center B cells</span>
+    <span class="s2">&quot;GC_B_DZ&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MKI67&quot;</span><span class="p">,</span> <span class="s2">&quot;AICDA&quot;</span><span class="p">,</span> <span class="s2">&quot;BCL6&quot;</span><span class="p">,</span> <span class="s2">&quot;CXCR4&quot;</span><span class="p">],</span>            <span class="c1"># Dark Zone</span>
+    <span class="s2">&quot;GC_B_LZ&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;BCL6&quot;</span><span class="p">,</span> <span class="s2">&quot;CXCR5&quot;</span><span class="p">,</span> <span class="s2">&quot;CD83&quot;</span><span class="p">,</span> <span class="s2">&quot;IRF8&quot;</span><span class="p">],</span>              <span class="c1"># Light Zone</span>
+
+    <span class="c1"># Memory B cells</span>
+    <span class="s2">&quot;Memory_B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD27&quot;</span><span class="p">,</span> <span class="s2">&quot;BANK1&quot;</span><span class="p">,</span> <span class="s2">&quot;FCRL4&quot;</span><span class="p">,</span> <span class="s2">&quot;FCRL5&quot;</span><span class="p">,</span> <span class="s2">&quot;TNFRSF13B&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHG1&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHA1&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Transitional B cells</span>
+    <span class="s2">&quot;Transitional_B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MME&quot;</span><span class="p">,</span> <span class="s2">&quot;CD24&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHM&quot;</span><span class="p">,</span> <span class="s2">&quot;IGHD&quot;</span><span class="p">,</span> <span class="s2">&quot;IL4R&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Dendritic Cells</span>
+    <span class="s2">&quot;DC&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ITGAX&quot;</span><span class="p">,</span> <span class="s2">&quot;HLA-DRA&quot;</span><span class="p">,</span> <span class="s2">&quot;HLA-DRB1&quot;</span><span class="p">,</span> <span class="s2">&quot;CD1A&quot;</span><span class="p">,</span> <span class="s2">&quot;IL3RA&quot;</span><span class="p">,</span> <span class="s2">&quot;CLEC4C&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Epithelial Cells</span>
+    <span class="s2">&quot;Epithelial&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;KRT19&quot;</span><span class="p">,</span> <span class="s2">&quot;KRT7&quot;</span><span class="p">,</span> <span class="s2">&quot;CDH1&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Granulocytes (Neutrophils etc.)</span>
+    <span class="s2">&quot;Granulocyte&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;FUT4&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3A&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3B&quot;</span><span class="p">,</span> <span class="s2">&quot;CEACAM8&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Macrophages</span>
+    <span class="s2">&quot;Macrophage&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD68&quot;</span><span class="p">,</span> <span class="s2">&quot;CD163&quot;</span><span class="p">,</span> <span class="s2">&quot;ITGAM&quot;</span><span class="p">,</span> <span class="s2">&quot;EMR1&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Monocytes</span>
+    <span class="s2">&quot;Monocyte&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD14&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3A&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3B&quot;</span><span class="p">],</span>
+
+    <span class="c1"># Myeloid (general myeloid lineage)</span>
+    <span class="s2">&quot;Myeloid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD33&quot;</span><span class="p">,</span> <span class="s2">&quot;ANPEP&quot;</span><span class="p">,</span> <span class="s2">&quot;ITGAM&quot;</span><span class="p">],</span>
+
+    <span class="c1"># T Cells (general CD3 complex)</span>
+    <span class="s2">&quot;T_cell&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD3G&quot;</span><span class="p">,</span> <span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;CD3E&quot;</span><span class="p">,</span> <span class="s2">&quot;CD247&quot;</span><span class="p">],</span>
+
+    <span class="c1"># CD4 T Cells</span>
+    <span class="s2">&quot;CD4_T&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD4&quot;</span><span class="p">,</span> <span class="s2">&quot;IL7R&quot;</span><span class="p">,</span> <span class="s2">&quot;CCR7&quot;</span><span class="p">,</span> <span class="s2">&quot;TCF7&quot;</span><span class="p">,</span> <span class="s2">&quot;SELL&quot;</span><span class="p">],</span>
+
+    <span class="c1"># CD8 T Cells</span>
+    <span class="s2">&quot;CD8_T&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD8A&quot;</span><span class="p">,</span> <span class="s2">&quot;CD8B&quot;</span><span class="p">,</span> <span class="s2">&quot;GZMB&quot;</span><span class="p">,</span> <span class="s2">&quot;PRF1&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span> <span class="s2">&quot;GNLY&quot;</span><span class="p">],</span>
+
+    <span class="c1"># NK Cells</span>
+    <span class="s2">&quot;NK&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;NCAM1&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3A&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3B&quot;</span><span class="p">,</span> <span class="s2">&quot;KLRD1&quot;</span><span class="p">,</span> <span class="s2">&quot;KLRF1&quot;</span><span class="p">],</span>
+
+    <span class="c1"># General immune cell marker</span>
+    <span class="s2">&quot;Immune_general&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PTPRC&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">][</span><span class="s2">&quot;provided_markers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_type_markers</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the cell types</span>
+<span class="n">leiden_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;C0: B-cells&quot;</span><span class="p">,</span>
+               <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;C1: T-cells&quot;</span><span class="p">,</span>
+               <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;C2: Myeloid-cells&quot;</span><span class="p">,</span>
+               <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;C3: T-cells&quot;</span><span class="p">,</span>
+               <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="s2">&quot;C4: B-cells&quot;</span><span class="p">}</span>
+
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">leiden_dict</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_umap</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                   <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;../Figures/04_umap_clusters.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_15_0.png" src="../_images/notebooks_04_downstream_15_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## %%time</span>
+<span class="c1"># The input type is only needed if you don&#39;t use defaults &quot;log2norm_counts&quot;</span>
+<span class="c1"># adata.X = adata.layers[&quot;your_pointlessly_renamed_log2norm_counts&quot;].copy()</span>
+
+<span class="c1"># This function calculates a hierarchichal clustering of the clusters and the DEGs in parallel</span>
+<span class="c1"># NOTE: This function returns the object, because we might make changes, that inflict pars of the symbolic links</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">downstream_preprocessing</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">ref_dict</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">][</span><span class="s2">&quot;provided_markers&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:downstream_preprocessing - Run DEGs...
+INFO:sc_code.py:downstream_preprocessing - DEG calculation took 953.55
+INFO:sc_code.py:downstream_preprocessing - ################################################################################
+Finished Downstream Preprocessing after 953.55 seconds
+################################################################################
+</pre></div></div>
+</div>
+</section>
+<section id="Plot-DEGs-as-dotplot">
+<h2>Plot DEGs as dotplot<a class="headerlink" href="#Plot-DEGs-as-dotplot" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>reference</th>
+      <th>names</th>
+      <th>scores</th>
+      <th>logfoldchanges</th>
+      <th>pvals</th>
+      <th>pvals_adj</th>
+      <th>pct_nz_group</th>
+      <th>pct_nz_reference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>16994</th>
+      <td>C0: B-cells</td>
+      <td>rest</td>
+      <td>KCNQ5</td>
+      <td>454.622772</td>
+      <td>1.953331</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.650834</td>
+      <td>0.033480</td>
+    </tr>
+    <tr>
+      <th>16995</th>
+      <td>C0: B-cells</td>
+      <td>rest</td>
+      <td>CDK14</td>
+      <td>451.340424</td>
+      <td>1.867490</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.850659</td>
+      <td>0.085902</td>
+    </tr>
+    <tr>
+      <th>16996</th>
+      <td>C0: B-cells</td>
+      <td>rest</td>
+      <td>TRIO</td>
+      <td>434.228729</td>
+      <td>1.298599</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.738389</td>
+      <td>0.060328</td>
+    </tr>
+    <tr>
+      <th>16997</th>
+      <td>C0: B-cells</td>
+      <td>rest</td>
+      <td>PRKCE</td>
+      <td>423.268219</td>
+      <td>1.569122</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.746833</td>
+      <td>0.069655</td>
+    </tr>
+    <tr>
+      <th>16998</th>
+      <td>C0: B-cells</td>
+      <td>rest</td>
+      <td>KHDRBS2</td>
+      <td>421.959229</td>
+      <td>1.486516</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.560730</td>
+      <td>0.027851</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>33983</th>
+      <td>C4: B-cells</td>
+      <td>rest</td>
+      <td>PTER</td>
+      <td>-0.100637</td>
+      <td>-0.018807</td>
+      <td>0.919839</td>
+      <td>0.920272</td>
+      <td>0.079099</td>
+      <td>0.077859</td>
+    </tr>
+    <tr>
+      <th>33984</th>
+      <td>C4: B-cells</td>
+      <td>rest</td>
+      <td>LINC00271</td>
+      <td>-0.097525</td>
+      <td>-0.001811</td>
+      <td>0.922310</td>
+      <td>0.922635</td>
+      <td>0.007079</td>
+      <td>0.007091</td>
+    </tr>
+    <tr>
+      <th>33985</th>
+      <td>C4: B-cells</td>
+      <td>rest</td>
+      <td>TAF15</td>
+      <td>0.082268</td>
+      <td>-0.040145</td>
+      <td>0.934434</td>
+      <td>0.934654</td>
+      <td>0.360524</td>
+      <td>0.341245</td>
+    </tr>
+    <tr>
+      <th>33986</th>
+      <td>C4: B-cells</td>
+      <td>rest</td>
+      <td>RNF19B</td>
+      <td>0.073144</td>
+      <td>-0.017293</td>
+      <td>0.941692</td>
+      <td>0.941803</td>
+      <td>0.053476</td>
+      <td>0.052735</td>
+    </tr>
+    <tr>
+      <th>33987</th>
+      <td>C4: B-cells</td>
+      <td>rest</td>
+      <td>RBBP6</td>
+      <td>0.070250</td>
+      <td>-0.029647</td>
+      <td>0.943995</td>
+      <td>0.943995</td>
+      <td>0.301742</td>
+      <td>0.289748</td>
+    </tr>
+  </tbody>
+</table>
+<p>42485 rows × 9 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: Via subset_kwargs you have full control over deg filtering and</span>
+<span class="c1">#       via plot_clustered_dotplot_kwargs over the dotplot,</span>
+<span class="c1">#       check the function definitions for more info.</span>
+<span class="c1">#       Alternative you can manipulate the deg dataframe directly and parse</span>
+<span class="c1">#       it with sc_plots.plot_DEG_dotplot(..., deg_df=deg_df, ...)</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_DEG_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+    <span class="n">deg_key</span><span class="o">=</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">,</span>
+    <span class="n">subset_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;n_genes&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>  <span class="c1"># for top 5</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_19_0.png" src="../_images/notebooks_04_downstream_19_0.png" />
+</div>
+</div>
+<section id="EXCOURS:-Caluclate-DEGs-with-global-external-reference">
+<h3>EXCOURS: Caluclate DEGs with global external reference<a class="headerlink" href="#EXCOURS:-Caluclate-DEGs-with-global-external-reference" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">When identifying differentially expressed genes (DEGs) for clusters in single-cell</div>
+<div class="line">RNA-seq, choosing an <strong>external, well-defined reference</strong> (e.g., a curated cell type</div>
+<div class="line">atlas or a high-quality control population) offers key advantages:</div>
+</div>
+<ul>
+<li><div class="line-block">
+<div class="line"><strong>Consistency Across Clusters</strong></div>
+<div class="line">Every cluster is compared to the same baseline, avoiding dependence on arbitrary or unstable in-dataset references.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Clear Biological Interpretation</strong></div>
+<div class="line">DEGs reflect deviations from a biologically meaningful standard, improving interpretability.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Reduced Batch and Overclustering Artifacts</strong></div>
+<div class="line">If clustering is imperfect—e.g., the same cell type split into multiple clusters</div>
+<div class="line">e.g. due to batch effects—internal comparisons will blur true cell type markers.</div>
+<div class="line">An external baseline anchors the analysis, ensuring markers remain sharp even</div>
+<div class="line">when cluster identities are fragmented.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Balanced Statistical Comparisons</strong></div>
+<div class="line">Tests like Wilcoxon assume comparable group sizes; using all other clusters as a reference can create extreme size imbalances, reducing statistical power and inflating false positives. An external reference provides a controlled, consistent group size for fair comparisons.</div>
+</div>
+</li>
+</ul>
+<p>In short, an external reference turns DEG analysis into a <strong>context-aware,
+biologically grounded</strong> approach that is more robust to clustering imperfections.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># As an example we take the cluster 0 here, but can also be data from different studys with clean and defined celltypes or whatever.</span>
+<span class="n">reference_adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;C0: B-cells&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="c1"># NOTE: because we merged the same cells, the obs names will be not unique anymore, so we make them unique</span>
+<span class="n">reference_adata</span><span class="o">.</span><span class="n">obs_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="s2">&quot;_ref&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">reference_adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">]</span>
+<span class="c1"># Alternatively you can call the buggy adata function after merging</span>
+<span class="c1"># adata_merged.obs_names_make_unique()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Merge the two objects before deg calculation</span>
+<span class="n">adata_merged</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">merge_for_deg</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">reference_adata</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>  <span class="c1"># This key must be in the obs of the adata.</span>
+    <span class="n">reference_name</span><span class="o">=</span><span class="s2">&quot;0_&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Here we can see it worked we have 3102 cells with 0_ and 0</span>
+<span class="n">vc</span> <span class="o">=</span> <span class="n">adata_merged</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">vc</span><span class="p">[</span><span class="n">vc</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;0_&quot;</span><span class="p">])])</span>
+<span class="c1"># and now we calculate the degs for each cluster vs te &quot;0_&quot;,</span>
+<span class="n">sc_utils</span><span class="o">.</span><span class="n">calc_DEGs</span><span class="p">(</span><span class="n">adata_merged</span><span class="p">,</span> <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="s2">&quot;0_&quot;</span><span class="p">)</span>
+<span class="c1"># and set the Degs into the original adata</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;vs_reference_degs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_merged</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="c1"># and print a check that the all combinations of group and ref end in 0_</span>
+<span class="n">utils</span><span class="o">.</span><span class="n">join_categorical_columns</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;vs_reference_degs&quot;</span><span class="p">],</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">,</span> <span class="s2">&quot;reference&quot;</span><span class="p">])[</span><span class="s2">&quot;joined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+leiden
+0_    38844
+Name: count, dtype: int64
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([&#39;C1: T-cells_0_&#39;, &#39;C2: Myeloid-cells_0_&#39;, &#39;C3: T-cells_0_&#39;,
+       &#39;C4: B-cells_0_&#39;], dtype=object)
+</pre></div></div>
+</div>
+</section>
+</section>
+</section>
+<section id="Hallmark-heatmap-per-cluster">
+<h1>Hallmark heatmap per cluster<a class="headerlink" href="#Hallmark-heatmap-per-cluster" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can show the significant hallmarks (significance by overlap with the DEGs)</span>
+<span class="c1"># Options are:  &quot;total_count&quot;,  &quot;total_scores&quot;,  &quot;total_normalized_by_genes&quot;, &quot;normalized_total_scores_by_genes&quot;</span>
+<span class="c1"># For color scale improvement you can use a use_minmax scaler-</span>
+
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_hallmark_group_heatmap</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">score_to_use</span><span class="o">=</span><span class="s2">&quot;normalized_total_scores_by_genes&quot;</span><span class="p">,</span>
+    <span class="n">subset_pct</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">use_minmax</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;../Figures/04_hallmark_HEATMAP_ct.pdf&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_26_0.png" src="../_images/notebooks_04_downstream_26_0.png" />
+</div>
+</div>
+</section>
+<section id="Condition-Comparison-plots">
+<h1>Condition Comparison plots<a class="headerlink" href="#Condition-Comparison-plots" title="Link to this heading"></a></h1>
+<section id="Run-the-DEG-calculation-for-the-within-the-clusters-to-compare-conditions">
+<h2>Run the DEG calculation for the within the clusters to compare conditions<a class="headerlink" href="#Run-the-DEG-calculation-for-the-within-the-clusters-to-compare-conditions" title="Link to this heading"></a></h2>
+<section id="Usage-explanation-for-run_cluster_condition_deg">
+<h3>Usage explanation for <code class="docutils literal notranslate"><span class="pre">run_cluster_condition_deg</span></code><a class="headerlink" href="#Usage-explanation-for-run_cluster_condition_deg" title="Link to this heading"></a></h3>
+<section id="Overview">
+<h4>Overview<a class="headerlink" href="#Overview" title="Link to this heading"></a></h4>
+<div class="line-block">
+<div class="line">This function runs differential expression comparisons across clusters and conditions in a very flexible way.</div>
+<div class="line">You can explicitly provide group-reference pairs, or let the function automatically generate them per cluster.</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="Key-modes">
+<h4>Key modes<a class="headerlink" href="#Key-modes" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Mode 1 (group_ref):</strong> Provide exact <code class="docutils literal notranslate"><span class="pre">[group,</span> <span class="pre">reference]</span></code> pairs directly (e.g., <code class="docutils literal notranslate"><span class="pre">group_ref=[[&quot;0_A&quot;,</span> <span class="pre">&quot;0_B&quot;]]</span></code>).</p></li>
+<li><p><strong>Mode 2 (groups + references):</strong> Provide parallel lists of <code class="docutils literal notranslate"><span class="pre">groups</span></code> and <code class="docutils literal notranslate"><span class="pre">references</span></code>.</p></li>
+<li><p><strong>Mode 4 (groups + single reference):</strong> Provide <code class="docutils literal notranslate"><span class="pre">groups</span></code> list and a single string <code class="docutils literal notranslate"><span class="pre">references</span></code>, which will be broadcasted to match each group.</p></li>
+<li><p><strong>Mode 5 (group_ref_cond):</strong> Provide condition pairs to expand automatically across each cluster.</p></li>
+<li><p><strong>Mode 6 (group_cond + reference_cond):</strong> Specify conditions to compare across each cluster.</p></li>
+<li><p><strong>Mode 7 (reference_cond only):</strong> Default sweep: compare all other conditions to the reference in each cluster.</p></li>
+<li><p><strong>Mode 9 (default sweep):</strong> Compare every condition against every other condition within each cluster.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="Example-usage">
+<h4>Example usage<a class="headerlink" href="#Example-usage" title="Link to this heading"></a></h4>
+<p>```python import pandas as pd import numpy as np import anndata as ad</p>
+</section>
+</section>
+</section>
+</section>
+<section id="Create-dummy-AnnData">
+<h1>Create dummy AnnData<a class="headerlink" href="#Create-dummy-AnnData" title="Link to this heading"></a></h1>
+<p>obs = pd.DataFrame({ “leiden”: [“0”, “0”, “1”, “1”, “2”, “2”], “condition”: [“A”, “B”, “A”, “C”, “A”, “B”] }) X = np.random.rand(obs.shape[0], 5) adata = ad.AnnData(X=X, obs=obs)</p>
+</section>
+<section id="Example:-explicit-group_ref">
+<h1>Example: explicit group_ref<a class="headerlink" href="#Example:-explicit-group_ref" title="Link to this heading"></a></h1>
+<p>res = run_cluster_condition_deg(adata, group_ref=[[“0_A”, “0_B”]])</p>
+</section>
+<section id="Example:-groups-and-references">
+<h1>Example: groups and references<a class="headerlink" href="#Example:-groups-and-references" title="Link to this heading"></a></h1>
+<p>res = run_cluster_condition_deg(adata, groups=[“0_A”], references=[“0_B”])</p>
+</section>
+<section id="Example:-auto-expand-per-cluster">
+<h1>Example: auto expand per cluster<a class="headerlink" href="#Example:-auto-expand-per-cluster" title="Link to this heading"></a></h1>
+<p>res = run_cluster_condition_deg(adata, group_cond=”A”, reference_cond=”B”)</p>
+</section>
+<section id="Example:-default-sweep-comparing-all-conditions">
+<h1>Example: default sweep comparing all conditions<a class="headerlink" href="#Example:-default-sweep-comparing-all-conditions" title="Link to this heading"></a></h1>
+<p>res = run_cluster_condition_deg(adata)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 572892 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;, &#39;leiden&#39;, &#39;cell_type_estimation_idxmax_ora&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_&#39;, &#39;activation_estimation_idxmax_ora&#39;, &#39;all_estimation_idxmax_ora&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;, &#39;genes_for_pca&#39;
+    uns: &#39;cell_type_estimation_idxmax_ora_colors&#39;, &#39;cell_type_info&#39;, &#39;ct_broad_colors&#39;, &#39;genesets&#39;, &#39;leiden_colors&#39;, &#39;neighbors&#39;, &#39;pca&#39;, &#39;config&#39;, &#39;stats&#39;, &#39;highly_variables&#39;, &#39;ref_dict_upd&#39;, &#39;ref_dict_upd_subs&#39;, &#39;rank_genes_groups&#39;, &#39;vs_reference_degs&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;, &#39;ora_estimate&#39;, &#39;ora_estimate_sig_only&#39;, &#39;ora_pvals&#39;
+    varm: &#39;PCs&#39;
+    layers: &#39;counts&#39;, &#39;log2norm_counts&#39;, &#39;norm_counts&#39;, &#39;scaled&#39;
+    obsp: &#39;connectivities&#39;, &#39;distances&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">cluster_key</span> <span class="o">=</span> <span class="s2">&quot;leiden&quot;</span>
+<span class="n">condition_obs_key</span> <span class="o">=</span> <span class="s2">&quot;tissue&quot;</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blood&quot;</span><span class="p">,</span> <span class="s2">&quot;tonsil&quot;</span><span class="p">]</span>
+<span class="n">deg_key</span> <span class="o">=</span> <span class="s2">&quot;blood_vs_tonsil_per_cluster&quot;</span>
+
+<span class="c1"># sc_utils.run_cluster_condition_deg automatically merges the keys &quot;leiden&quot; and &quot;condititon&quot;</span>
+<span class="c1"># there is also utils.join_categorical_columns which also eighter returns a new col or alters the dataframe inplace</span>
+<span class="c1"># utils.join_categorical_columns(adata.obs, [cluster_key, deg_obs_key], new_col=deg_obs_key, inplace=True)</span>
+
+<span class="n">sc_utils</span><span class="o">.</span><span class="n">calc_DEGs_multi_group</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">cluster_key</span><span class="o">=</span><span class="n">cluster_key</span><span class="p">,</span> <span class="n">condition_obs_key</span><span class="o">=</span><span class="n">condition_obs_key</span><span class="p">,</span>
+    <span class="n">group_ref_cond</span><span class="o">=</span><span class="p">[</span><span class="n">conditions</span><span class="p">],</span> <span class="n">min_cells</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="c1"># NOTE: This will also be neccessary for the automated usage of &quot;condition_obs_key&quot; in the</span>
+<span class="c1">#       sc_plots.plot_DEG_dotplot( ..., condition_obs_key=condition_obs_key, ...)</span>
+<span class="c1">#       sc_plots.plot_dotplot(..., condition_obs_key=condition_obs_key, ...)</span>
+<span class="c1">#       sc_plots.plot_violin(..., condition_obs_key=condition_obs_key, ...)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_utils.py:calc_DEGs_multi_group - Skipping invalid group-ref pair: C1: T-cells_blood vs C1: T-cells_tonsil
+WARNING:sc_utils.py:calc_DEGs_multi_group - Skipping invalid group-ref pair: C1: T-cells_blood vs C1: T-cells_tonsil
+WARNING:sc_utils.py:check_ct_abundances - Removed low-abundance pair: C0: B-cells_blood (11 cells) vs C0: B-cells_tonsil (38833 cells)
+WARNING:sc_utils.py:check_ct_abundances - Removed low-abundance pair: C0: B-cells_blood (11 cells) vs C0: B-cells_tonsil (38833 cells)
+CPU times: user 32min 20s, sys: 6min 58s, total: 39min 19s
+Wall time: 8min 7s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tissue_per_leiden_rank_genes_groups&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>reference</th>
+      <th>names</th>
+      <th>scores</th>
+      <th>logfoldchanges</th>
+      <th>pvals</th>
+      <th>pvals_adj</th>
+      <th>pct_nz_group</th>
+      <th>pct_nz_reference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>C2: Myeloid-cells_blood</td>
+      <td>C2: Myeloid-cells_tonsil</td>
+      <td>SERPINF1</td>
+      <td>-129.327545</td>
+      <td>-1.142115</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.033338</td>
+      <td>0.601083</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C2: Myeloid-cells_blood</td>
+      <td>C2: Myeloid-cells_tonsil</td>
+      <td>HLA-DQA1</td>
+      <td>-127.625046</td>
+      <td>-2.472059</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.239194</td>
+      <td>0.881849</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>C2: Myeloid-cells_blood</td>
+      <td>C2: Myeloid-cells_tonsil</td>
+      <td>S100A8</td>
+      <td>120.475357</td>
+      <td>4.771376</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.923935</td>
+      <td>0.176219</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>C2: Myeloid-cells_blood</td>
+      <td>C2: Myeloid-cells_tonsil</td>
+      <td>S100A9</td>
+      <td>119.543098</td>
+      <td>4.105957</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.946088</td>
+      <td>0.267414</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>C2: Myeloid-cells_blood</td>
+      <td>C2: Myeloid-cells_tonsil</td>
+      <td>DNASE1L3</td>
+      <td>-113.654800</td>
+      <td>-1.266246</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.012115</td>
+      <td>0.425746</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>25477</th>
+      <td>C4: B-cells_blood</td>
+      <td>C4: B-cells_tonsil</td>
+      <td>NIPAL2</td>
+      <td>0.014331</td>
+      <td>0.015057</td>
+      <td>0.988566</td>
+      <td>0.989148</td>
+      <td>0.041297</td>
+      <td>0.041880</td>
+    </tr>
+    <tr>
+      <th>25478</th>
+      <td>C4: B-cells_blood</td>
+      <td>C4: B-cells_tonsil</td>
+      <td>TRGV5</td>
+      <td>-0.011080</td>
+      <td>0.000668</td>
+      <td>0.991160</td>
+      <td>0.991627</td>
+      <td>0.001064</td>
+      <td>0.001068</td>
+    </tr>
+    <tr>
+      <th>25479</th>
+      <td>C4: B-cells_blood</td>
+      <td>C4: B-cells_tonsil</td>
+      <td>IL17RA</td>
+      <td>0.008936</td>
+      <td>0.021608</td>
+      <td>0.992870</td>
+      <td>0.993221</td>
+      <td>0.049670</td>
+      <td>0.050641</td>
+    </tr>
+    <tr>
+      <th>25480</th>
+      <td>C4: B-cells_blood</td>
+      <td>C4: B-cells_tonsil</td>
+      <td>FARP2</td>
+      <td>-0.001452</td>
+      <td>0.043365</td>
+      <td>0.998842</td>
+      <td>0.999077</td>
+      <td>0.087987</td>
+      <td>0.091816</td>
+    </tr>
+    <tr>
+      <th>25481</th>
+      <td>C4: B-cells_blood</td>
+      <td>C4: B-cells_tonsil</td>
+      <td>SLCO4A1</td>
+      <td>0.000845</td>
+      <td>0.015773</td>
+      <td>0.999326</td>
+      <td>0.999444</td>
+      <td>0.019797</td>
+      <td>0.020020</td>
+    </tr>
+  </tbody>
+</table>
+<p>25482 rows × 9 columns</p>
+</div></div>
+</div>
+<section id="Split-Dotplot">
+<h2>Split Dotplot<a class="headerlink" href="#Split-Dotplot" title="Link to this heading"></a></h2>
+<section id="Split-DEG-Dotplot">
+<h3>Split DEG Dotplot<a class="headerlink" href="#Split-DEG-Dotplot" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: Via subset_kwargs you have full control over deg filtering and</span>
+<span class="c1">#       via plot_clustered_dotplot_kwargs over the dotplot,</span>
+<span class="c1">#       check the function definitions for more info.</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_DEG_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">deg_df</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tissue_per_leiden_rank_genes_groups&quot;</span><span class="p">],</span>
+    <span class="n">subset_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;n_genes&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="n">plot_group_dotplot_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;save_path&quot;</span><span class="p">:</span> <span class="s2">&quot;../Figures/04_split_dotplot_1_vs_1.pdf&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_35_0.png" src="../_images/notebooks_04_downstream_35_0.png" />
+</div>
+</div>
+</section>
+<section id="Split-Gene-Dotplot">
+<h3>Split Gene Dotplot<a class="headerlink" href="#Split-Gene-Dotplot" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">When working with combined categorical variables, such as clusters</div>
+<div class="line">(e.g., leiden or louvain, referred to here as <code class="docutils literal notranslate"><span class="pre">cluster_key</span></code>) and</div>
+<div class="line">experimental conditions (e.g., control vs treatment, <code class="docutils literal notranslate"><span class="pre">condition_obs_key</span></code>),</div>
+<div class="line">it’s often necessary to analyze differential expression within each</div>
+<div class="line">joint group.</div>
+</div>
+<div class="line-block">
+<div class="line">The idea is to combine these keys into a single composite key</div>
+<div class="line">(<code class="docutils literal notranslate"><span class="pre">deg_obs_key</span></code>) so that each unique combination of cluster and condition</div>
+<div class="line">defines its own group. You can then calculate differentially expressed</div>
+<div class="line">genes (DEGs) between groups, or against a global reference, using this</div>
+<div class="line">combined annotation.</div>
+</div>
+<div class="line-block">
+<div class="line">After combining, assign a new key (e.g., <code class="docutils literal notranslate"><span class="pre">deg_key</span></code>) to store the DEG</div>
+<div class="line">results. Finally, run your downstream analysis function — for example,</div>
+<div class="line">a signature scoring or marker gene identification step — on the DEGs</div>
+<div class="line">for each combined group.</div>
+</div>
+<div class="line-block">
+<div class="line">This approach ensures that both cluster-specific effects and</div>
+<div class="line">condition-specific effects are captured together, rather than analyzed</div>
+<div class="line">independently, which can mask important biological signals or</div>
+<div class="line">interactions.</div>
+</div>
+<p><strong>Summary of steps</strong></p>
+<ul>
+<li><div class="line-block">
+<div class="line"><strong>Combine keys and Calculate DEGs:</strong></div>
+<div class="line">run the run_cluster_condition_deg().</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Run function:</strong></div>
+<div class="line">Call your function (e.g., gene set scoring, enrichment, etc.) using</div>
+<div class="line">the DEGs from <code class="docutils literal notranslate"><span class="pre">deg_key</span></code>.</div>
+</div>
+</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get some markers to plot</span>
+<span class="n">ct_ref</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_valide_ref_dicts</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;genesets&quot;</span><span class="p">][</span><span class="s2">&quot;cell_type_markers&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">ct_ref</span><span class="p">[</span><span class="s2">&quot;macrophage_cells&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Full plot</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+    <span class="n">keys</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="n">condition_obs_key</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="n">conditions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_39_0.png" src="../_images/notebooks_04_downstream_39_0.png" />
+</div>
+</div>
+</section>
+<section id="Subsetting-adata-objects-to-conditions/DEGs-only">
+<h3>Subsetting adata objects to conditions/DEGs only<a class="headerlink" href="#Subsetting-adata-objects-to-conditions/DEGs-only" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">Showing only DEGs in a dotplot makes sense because it removes noise</div>
+<div class="line">from non-informative genes, focuses the visual on biologically</div>
+<div class="line">relevant differences, and improves interpretability. Non-DEGs often</div>
+<div class="line">clutter the axis and dilute signal, while DEGs highlight actual</div>
+<div class="line">transcriptional changes across conditions or clusters.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Subsetted to significant genes and clusters only</span>
+<span class="c1"># NOTE: the filtering is unstringent like before, it&#39;s just a showcase</span>
+<span class="n">adata_out</span><span class="p">,</span> <span class="n">retained_ref</span> <span class="o">=</span> <span class="n">sc_utils</span><span class="o">.</span><span class="n">get_adata_subset</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="n">conditions</span><span class="p">,</span>
+    <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="n">condition_obs_key</span><span class="p">,</span>
+    <span class="c1"># layer=&quot;log2norm_counts&quot;,</span>
+    <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;log2norm_counts&quot;</span><span class="p">,</span>
+    <span class="n">cluster_key</span><span class="o">=</span><span class="n">cluster_key</span><span class="p">,</span>
+    <span class="n">subset_to_degs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">mask_non_significant_groups</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">scale_axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">when_to_scale</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">,</span>
+    <span class="n">kwarg_filter_genes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;perc&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;p_val_cutoff&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s2">&quot;lfc&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+    <span class="n">kwarg_filter_cells</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;perc&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;p_val_cutoff&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s2">&quot;lfc&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata_out</span><span class="p">,</span>
+    <span class="n">keys</span><span class="o">=</span><span class="n">retained_ref</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="n">condition_obs_key</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="n">conditions</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_42_0.png" src="../_images/notebooks_04_downstream_42_0.png" />
+</div>
+</div>
+</section>
+<section id="EXCOURSE:-Transforming-for-visibility">
+<h3>EXCOURSE: Transforming for visibility<a class="headerlink" href="#EXCOURSE:-Transforming-for-visibility" title="Link to this heading"></a></h3>
+<div class="line-block">
+<div class="line">Transforming values to a common scale (e.g. 0–1 via min-max) can mislead if</div>
+<div class="line">the original data range lacks meaningful magnitude. A range like 0–7 and one</div>
+<div class="line">like 1e-6–1e-5 will look identical post-transformation, despite vastly</div>
+<div class="line">different implications. If the raw range doesn’t carry interpretive weight—</div>
+<div class="line">biological or statistical—then scaling just for visual parity is unjustified</div>
+<div class="line">and can obscure the actual importance (or irrelevance) of the variation.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #########################################################</span>
+<span class="c1"># Create synthetic AnnData with 2 groups, 2 conditions, 2 genes</span>
+<span class="n">gene_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;GeneX&quot;</span><span class="p">,</span> <span class="s2">&quot;GeneY&quot;</span><span class="p">]</span>
+<span class="n">group_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span> <span class="s2">&quot;Group2&quot;</span><span class="p">]</span>
+<span class="n">condition_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Cond1&quot;</span><span class="p">,</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">]</span>
+
+<span class="n">num_cells</span> <span class="o">=</span> <span class="mi">50004</span>
+<span class="n">adata_demo</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">AnnData</span><span class="p">(</span>
+    <span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_cells</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_names</span><span class="p">))),</span>
+    <span class="n">obs</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s2">&quot;group_id&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">group_labels</span><span class="p">,</span> <span class="n">num_cells</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="s2">&quot;condition_id&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">condition_labels</span><span class="p">,</span> <span class="n">num_cells</span> <span class="o">//</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">}),</span>
+    <span class="n">var</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">gene_names</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+<span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+<span class="c1"># #########################################################</span>
+<span class="c1"># Introduce contrasting expression differences</span>
+<span class="c1"># GeneX: large difference between conditions in Group1</span>
+<span class="c1"># GeneY: small difference between conditions in Group2</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># #########################################################</span>
+<span class="c1"># Assign base expression with differences between conditions/groups</span>
+<span class="n">adata_demo</span><span class="o">.</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group1&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group1&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group2&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group2&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">adata_demo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">adata_demo</span><span class="o">.</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group1&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group1&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group2&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;group_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Group2&quot;</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">adata_demo</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;condition_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span><span class="mf">3.1</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">adata_demo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># #########################################################</span>
+<span class="c1"># Default</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata_demo</span><span class="p">,</span>
+    <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GeneX&quot;</span><span class="p">,</span> <span class="s2">&quot;GeneY&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;group_id&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="s2">&quot;condition_id&quot;</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Cond1&quot;</span><span class="p">,</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="c1"># #########################################################</span>
+<span class="c1"># Scale Columns - Overestimates Group2 GeneX</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata_demo</span><span class="p">,</span>
+    <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GeneX&quot;</span><span class="p">,</span> <span class="s2">&quot;GeneY&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;group_id&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="s2">&quot;condition_id&quot;</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Cond1&quot;</span><span class="p">,</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">],</span>
+    <span class="n">plot_group_dotplot_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;minmax_scale_axis&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="c1"># #########################################################</span>
+<span class="c1"># Scale Rows - Overestimates Group1 GeneY</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_dotplot</span><span class="p">(</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">adata_demo</span><span class="p">,</span>
+    <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GeneX&quot;</span><span class="p">,</span> <span class="s2">&quot;GeneY&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;group_id&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="s2">&quot;condition_id&quot;</span><span class="p">,</span>
+    <span class="n">vs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Cond1&quot;</span><span class="p">,</span> <span class="s2">&quot;Cond2&quot;</span><span class="p">],</span>
+    <span class="n">plot_group_dotplot_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;minmax_scale_axis&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">},</span>
+
+<span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/ssd/projects/Proximap/mambaforge/scanpy_stable_25_04_latest/lib/python3.12/site-packages/anndata/_core/aligned_df.py:68: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn(&#34;Transforming to str index.&#34;, ImplicitModificationWarning)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_45_1.png" src="../_images/notebooks_04_downstream_45_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_45_2.png" src="../_images/notebooks_04_downstream_45_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_45_3.png" src="../_images/notebooks_04_downstream_45_3.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Violins">
+<h2>Violins<a class="headerlink" href="#Violins" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_violin</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;HLA-A&quot;</span><span class="p">,</span> <span class="s2">&quot;HLA-B&quot;</span><span class="p">,</span> <span class="s2">&quot;HLA-C&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;disease&quot;</span><span class="p">,</span>
+    <span class="n">condition_obs_key</span><span class="o">=</span><span class="n">condition_obs_key</span><span class="p">,</span>
+    <span class="n">conditions</span><span class="o">=</span><span class="n">conditions</span><span class="p">,</span>
+    <span class="n">stripplot_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">.3</span><span class="p">},</span>
+    <span class="n">base_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_47_0.png" src="../_images/notebooks_04_downstream_47_0.png" />
+</div>
+</div>
+</section>
+<section id="Condition-Umap-side-by-side">
+<h2>Condition Umap side by side<a class="headerlink" href="#Condition-Umap-side-by-side" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 572892 × 8497
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;, &#39;leiden&#39;, &#39;cell_type_estimation_idxmax_ora&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str__str_&#39;, &#39;cell_type_estimation_idxmax_ora_str_str&#39;, &#39;cell_type_estimation_idxmax_ora_str_str_&#39;, &#39;cell_type_estimation_idxmax_ora_str__str&#39;, &#39;cell_type_estimation_idxmax_ora_str__str_&#39;, &#39;activation_estimation_idxmax_ora&#39;, &#39;all_estimation_idxmax_ora&#39;, &#39;leiden_tissue&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;, &#39;mean&#39;, &#39;std&#39;, &#39;genes_for_pca&#39;
+    uns: &#39;cell_type_estimation_idxmax_ora_colors&#39;, &#39;cell_type_info&#39;, &#39;ct_broad_colors&#39;, &#39;genesets&#39;, &#39;leiden_colors&#39;, &#39;neighbors&#39;, &#39;pca&#39;, &#39;config&#39;, &#39;stats&#39;, &#39;highly_variables&#39;, &#39;ref_dict_upd&#39;, &#39;ref_dict_upd_subs&#39;, &#39;rank_genes_groups&#39;, &#39;vs_reference_degs&#39;, &#39;tissue_per_leiden_rank_genes_groups&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;, &#39;ora_estimate&#39;, &#39;ora_estimate_sig_only&#39;, &#39;ora_pvals&#39;
+    varm: &#39;PCs&#39;
+    layers: &#39;counts&#39;, &#39;log2norm_counts&#39;, &#39;norm_counts&#39;, &#39;scaled&#39;
+    obsp: &#39;connectivities&#39;, &#39;distances&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_umap_sbs</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">genes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;HLA-B&quot;</span><span class="p">],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;tissue&quot;</span><span class="p">,</span>  <span class="c1"># Conditon or whatever catigorical you want to plot side by side</span>
+    <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># This could be used to specify which of the conditions you want to plot</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="n">sc_plots</span><span class="o">.</span><span class="n">get_colormap</span><span class="p">(</span>  <span class="c1"># This is a nice little helper that fades the alpha channel of a cmap</span>
+        <span class="s2">&quot;turbo&quot;</span><span class="p">,</span>
+        <span class="n">fade_alpha</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span> <span class="o">+</span> <span class="p">[</span><span class="mf">.3</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span> <span class="o">+</span> <span class="p">[</span><span class="mf">.6</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span><span class="p">),</span>
+    <span class="n">base_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_50_0.png" src="../_images/notebooks_04_downstream_50_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Volcano-plots">
+<h1>Volcano plots<a class="headerlink" href="#Volcano-plots" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Here we use random genes to show the feature, default is top 5 up and down</span>
+<span class="n">deg_df</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">]</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_volcano</span><span class="p">(</span>
+    <span class="n">deg_df</span><span class="p">,</span> <span class="n">genes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">deg_df</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">deg_df</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()],</span>
+    <span class="n">spacing_factor</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="c1">#  1.15,</span>
+    <span class="n">label_offset_px</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="c1"># 20.0,</span>
+    <span class="n">text_shift_px</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># 12.0,)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_52_0.png" src="../_images/notebooks_04_downstream_52_0.png" />
+</div>
+</div>
+<div class="line-block">
+<div class="line">As we can see, the adjusted p-values are crazy inflated,</div>
+<div class="line">you should use our permutation test to calculate the degs,</div>
+<div class="line">this also don’t enforces you to have so many different filters.</div>
+</div>
+</section>
+<section id="Full-downstream-plots-and-csvs">
+<h1>Full downstream plots and csvs<a class="headerlink" href="#Full-downstream-plots-and-csvs" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For reference check the docs of the sc_config or the code directly</span>
+<span class="c1"># Here we set parameters to don&#39;t plot too much, it&#39;s just a showcase.</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;visualize_leiden_umap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;cl&quot;</span><span class="p">][</span><span class="s2">&quot;visualize_embedding_density_umap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;visualize_qc_umap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># HERE</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;cl&quot;</span><span class="p">][</span><span class="s2">&quot;visualize_pca_variance_ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># ############################################################################################</span>
+<span class="c1"># Visualize heatmaps based on medioids subclustering</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;heatmaps&quot;</span><span class="p">][</span><span class="s2">&quot;visualize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;cluster_violins&quot;</span><span class="p">][</span><span class="s2">&quot;visualize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;cluster_dotplot&quot;</span><span class="p">][</span><span class="s2">&quot;visualize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;cluster_dotplot&quot;</span><span class="p">][</span><span class="s2">&quot;marker_mod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rna&quot;</span><span class="p">]</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;cluster_dotplot&quot;</span><span class="p">][</span><span class="s2">&quot;marker_mod_per_cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rna&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># Plot the gradient continuosF</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;continuos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># HERE</span>
+<span class="c1"># Optionally plot the gradient umaps in discretized version</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;discretize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;num_ref_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;num_DEGs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1">##############</span>
+<span class="c1"># use highly variable</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;include_highly_variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># HERE</span>
+
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;to_plot&quot;</span><span class="p">][</span><span class="s2">&quot;down&quot;</span><span class="p">][</span><span class="s2">&quot;gradients_umap&quot;</span><span class="p">][</span><span class="s2">&quot;num_highly_variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<span class="c1"># Save tables as different data types</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;save_df_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;.xlsx&quot;</span><span class="p">]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dummy subset to cluster 0 and 4 for faster plotting</span>
+<span class="n">clusters_to_use</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;C0: B-cells&quot;</span><span class="p">,</span> <span class="s2">&quot;C2: Myeloid-cells&quot;</span><span class="p">]</span>
+<span class="n">adata_</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;leiden&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">clusters_to_use</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata_</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="n">adata_</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;group&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">clusters_to_use</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># THIS HAS TO BE USED WITH EXTREME CONCIOUSNESS and only used for plotting arguments or useless scanpy thing like overwriting &quot;use_raw&quot; = False</span>
+<span class="n">sc_config</span><span class="o">.</span><span class="n">update_key_in_config</span><span class="p">(</span><span class="n">adata_</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">],</span> <span class="n">key_to_update</span><span class="o">=</span><span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="o">=</span><span class="s2">&quot;turbo&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+
+<span class="c1"># Define rcParams for customization, notebook showing is figure.dpi, reduce to not overload the nootebook sizes</span>
+<span class="c1"># BUT!!!!!!! Here we convert the notebook to a html file to send it to the collaborators, reducing the figure.dpi</span>
+<span class="c1"># will result in bad quality plots, which you don&#39;t want to copy out of the html report, so use also 400</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># &quot;figure.figsize&quot;: (8, 6),  # Figure size in inches</span>
+    <span class="s2">&quot;savefig.dpi&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="c1">#&quot;axes.titlesize&quot;: 16,     # Title font size</span>
+    <span class="c1">#&quot;axes.labelsize&quot;: 14,     # Label font size</span>
+    <span class="c1">#&quot;xtick.labelsize&quot;: 12,    # X-axis tick label size</span>
+    <span class="c1">#&quot;ytick.labelsize&quot;: 12     # Y-axis tick label size</span>
+<span class="p">})</span>
+
+
+<span class="c1"># And the automated Plotting/CSV saving close to everything adjustable via the config</span>
+<span class="c1"># (thats why you will need some time to familiarize yourself with the config!)</span>
+<span class="c1"># NOTE: It is actually not strictly necessary to run the downstream_preprocessing,</span>
+<span class="c1">#       because it is handled also by the function. But for the previous plots we needed the DEGs.</span>
+<span class="k">with</span> <span class="n">plt</span><span class="o">.</span><span class="n">rc_context</span><span class="p">({</span><span class="s1">&#39;figure.dpi&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="s1">&#39;savefig.dpi&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">}):</span>
+    <span class="n">sc_code</span><span class="o">.</span><span class="n">run_downstream</span><span class="p">(</span><span class="n">adata_</span><span class="p">,</span> <span class="p">{})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:run_downstream - Setting the X to log2norm_counts counts.
+WARNING:sc_code.py:run_downstream - Setting the X to log2norm_counts counts.
+INFO:sc_code.py:downstream_preprocessing - ################################################################################
+Finished Downstream Preprocessing after 0.00 seconds
+################################################################################
+INFO:sc_code.py:downstream_preprocessing - ################################################################################
+Finished Downstream Preprocessing after 0.00 seconds
+################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - This set of figures visualizes Features in the UMAP Space
+INFO:sc_code.py:run_downstream - This set of figures visualizes Features in the UMAP Space
+INFO:sc_code.py:run_downstream - The figures are saved in analysis/figures/downstream/UMAP/
+INFO:sc_code.py:run_downstream - The figures are saved in analysis/figures/downstream/UMAP/
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Figure shows the unsupervised leiden Clustering,
+INFO:sc_code.py:run_downstream - This Figure shows the unsupervised leiden Clustering,
+INFO:sc_code.py:run_downstream - it is saved as: umap_leiden_clustering.pdf
+INFO:sc_code.py:run_downstream - it is saved as: umap_leiden_clustering.pdf
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_1.png" src="../_images/notebooks_04_downstream_58_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_sample_type_.pdf
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_sample_type_.pdf
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_3.png" src="../_images/notebooks_04_downstream_58_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_study_category_.pdf
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_study_category_.pdf
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_5.png" src="../_images/notebooks_04_downstream_58_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - This Figure shows Density of cells for each Sample or Condition
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_platform_.pdf
+INFO:sc_code.py:run_downstream - it is saved as: umap_density_platform_.pdf
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_7.png" src="../_images/notebooks_04_downstream_58_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Figure shows Quality Control for Cells
+INFO:sc_code.py:run_downstream - This Figure shows Quality Control for Cells
+INFO:sc_code.py:run_downstream - it is saved as: umap__qc.pdf
+INFO:sc_code.py:run_downstream - it is saved as: umap__qc.pdf
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_9.png" src="../_images/notebooks_04_downstream_58_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - This Shows C0: B-cells_DEGs Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - This Shows C0: B-cells_DEGs Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_C0: B-cells_DEGs_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_C0: B-cells_DEGs_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_11.png" src="../_images/notebooks_04_downstream_58_11.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - This Shows C2: Myeloid-cells_DEGs Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - This Shows C2: Myeloid-cells_DEGs Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_C2: Myeloid-cells_DEGs_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_C2: Myeloid-cells_DEGs_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+INFO:sc_plots.py:continuos_umap_helper - ################################################################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_13.png" src="../_images/notebooks_04_downstream_58_13.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:continuos_umap_helper - ########################################
+INFO:sc_plots.py:continuos_umap_helper - ########################################
+INFO:sc_plots.py:continuos_umap_helper - This Shows top2_highly_variable Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - This Shows top2_highly_variable Genes gradients for each cell over the UMAP
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_top2_highly_variable_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - It is saved as: umap_top2_highly_variable_continuos.pdf
+INFO:sc_plots.py:continuos_umap_helper - ########################################
+INFO:sc_plots.py:continuos_umap_helper - ########################################
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_15.png" src="../_images/notebooks_04_downstream_58_15.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the DEGs and/or Markers per Cluster.
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the DEGs and/or Markers per Cluster.
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the DEGs per Cluster.
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the DEGs per Cluster.
+INFO:sc_code.py:run_downstream - NOTE: If DEGs are overlapping, they are shown only once and
+INFO:sc_code.py:run_downstream - NOTE: If DEGs are overlapping, they are shown only once and
+INFO:sc_code.py:run_downstream -       if the number of genes per Cluster is not always the same and you want it
+INFO:sc_code.py:run_downstream -       if the number of genes per Cluster is not always the same and you want it
+INFO:sc_code.py:run_downstream -       (or vice versa), please ask your Collaboration partner of choice
+INFO:sc_code.py:run_downstream -       (or vice versa), please ask your Collaboration partner of choice
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/DEG/
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/DEG/
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_plots.py:plot_per_group_DEG_dotplot_n_gene_dendrogram - The figure is saved as cluster_DEG_dotplot_top10_0.pdf
+INFO:sc_plots.py:plot_per_group_DEG_dotplot_n_gene_dendrogram - The figure is saved as cluster_DEG_dotplot_top10_0.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_17.png" src="../_images/notebooks_04_downstream_58_17.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the markers per Cluster.
+INFO:sc_code.py:run_downstream - This Shows Dotplots for the markers per Cluster.
+INFO:sc_code.py:run_downstream - NOTE: It is possible to subset these and you want it
+INFO:sc_code.py:run_downstream - NOTE: It is possible to subset these and you want it
+INFO:sc_code.py:run_downstream -       please ask your Collaboration partner of choice.
+INFO:sc_code.py:run_downstream -       please ask your Collaboration partner of choice.
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/markers/
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Dotplots/markers/
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_FDC.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_FDC.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_19.png" src="../_images/notebooks_04_downstream_58_19.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Plasma.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Plasma.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_21.png" src="../_images/notebooks_04_downstream_58_21.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Naive_B.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Naive_B.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_23.png" src="../_images/notebooks_04_downstream_58_23.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_GC_B_DZ.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_GC_B_DZ.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_25.png" src="../_images/notebooks_04_downstream_58_25.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_GC_B_LZ.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_GC_B_LZ.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_27.png" src="../_images/notebooks_04_downstream_58_27.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Memory_B.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Memory_B.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_29.png" src="../_images/notebooks_04_downstream_58_29.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Transitional_B.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Transitional_B.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_31.png" src="../_images/notebooks_04_downstream_58_31.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_DC.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_DC.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_33.png" src="../_images/notebooks_04_downstream_58_33.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Epithelial.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Epithelial.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_35.png" src="../_images/notebooks_04_downstream_58_35.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Granulocyte.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Granulocyte.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_37.png" src="../_images/notebooks_04_downstream_58_37.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Macrophage.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Macrophage.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_39.png" src="../_images/notebooks_04_downstream_58_39.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Monocyte.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Monocyte.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_41.png" src="../_images/notebooks_04_downstream_58_41.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Myeloid.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Myeloid.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_43.png" src="../_images/notebooks_04_downstream_58_43.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_T_cell.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_T_cell.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_45.png" src="../_images/notebooks_04_downstream_58_45.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_CD4_T.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_CD4_T.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_47.png" src="../_images/notebooks_04_downstream_58_47.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_CD8_T.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_CD8_T.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_49.png" src="../_images/notebooks_04_downstream_58_49.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_NK.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_NK.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_51.png" src="../_images/notebooks_04_downstream_58_51.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Immune_general.pdf
+INFO:sc_plots.py:plot_ref_dotplots - The figure is saved as rna_cluster_marker_expression_group_Immune_general.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_53.png" src="../_images/notebooks_04_downstream_58_53.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - This Shows Stacked Violinplots for the DEGs and/or Markers per Cluster.
+INFO:sc_code.py:run_downstream - This Shows Stacked Violinplots for the DEGs and/or Markers per Cluster.
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Violinplots/
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Violinplots/
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - This Shows Stacked Violinplots for the DEGs per Cluster.
+INFO:sc_code.py:run_downstream - This Shows Stacked Violinplots for the DEGs per Cluster.
+INFO:sc_code.py:run_downstream - NOTE: If DEGs are overlapping, they are shown only once and
+INFO:sc_code.py:run_downstream - NOTE: If DEGs are overlapping, they are shown only once and
+INFO:sc_code.py:run_downstream -       if the number of genes per Cluster is not always the same and you want it
+INFO:sc_code.py:run_downstream -       if the number of genes per Cluster is not always the same and you want it
+INFO:sc_code.py:run_downstream -       (or vice versa), please ask your Collaboration partner of choice
+INFO:sc_code.py:run_downstream -       (or vice versa), please ask your Collaboration partner of choice
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Violinplots/DEG/
+INFO:sc_code.py:run_downstream - The figures are saved in /downstream/Violinplots/DEG/
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+INFO:sc_plots.py:plot_per_group_stacked_violins - The figure is saved as cluster_DEG_dotplot_cluster_C0: B-cells_top20.pdf
+INFO:sc_plots.py:plot_per_group_stacked_violins - The figure is saved as cluster_DEG_dotplot_cluster_C0: B-cells_top20.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_55.png" src="../_images/notebooks_04_downstream_58_55.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_plots.py:plot_per_group_stacked_violins - The figure is saved as cluster_DEG_dotplot_cluster_C2: Myeloid-cells_top20.pdf
+INFO:sc_plots.py:plot_per_group_stacked_violins - The figure is saved as cluster_DEG_dotplot_cluster_C2: Myeloid-cells_top20.pdf
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_04_downstream_58_57.png" src="../_images/notebooks_04_downstream_58_57.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - Saving Cluster stats at: analysis/DEGs/
+INFO:sc_code.py:run_downstream - Saving Cluster stats at: analysis/DEGs/
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - Saving Marker gensets at: analysis/markers/
+INFO:sc_code.py:run_downstream - Saving Marker gensets at: analysis/markers/
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_code.py:run_downstream - ########################################################################################################################
+INFO:sc_utils.py:save_genesets_to_csv - All entries under &#39;genesets&#39; have been saved to analysis/markers/
+INFO:sc_utils.py:save_genesets_to_csv - All entries under &#39;genesets&#39; have been saved to analysis/markers/
+INFO:sc_code.py:run_downstream - ################################################################################
+Finished Downstream Visualisations after 128.7599000930786 seconds
+################################################################################
+INFO:sc_code.py:run_downstream - ################################################################################
+Finished Downstream Visualisations after 128.7599000930786 seconds
+################################################################################
+CPU times: user 5min 10s, sys: 1.4 s, total: 5min 12s
+Wall time: 2min 9s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the DEGs as csv</span>
+<span class="n">sc_utils</span><span class="o">.</span><span class="n">get_DEG_gene_csvs</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Rest">
+<h1>Rest<a class="headerlink" href="#Rest" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_code</span><span class="o">.</span><span class="n">save_h5ad</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;../data/04_tonsil_blood_DISCO_clustered_downstream_processed.h5ad&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;lzf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="03_search_for_clustering_parameters.html" class="btn btn-neutral float-left" title="Single-Cell Clustering &amp; Dimensionality Reduction Pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

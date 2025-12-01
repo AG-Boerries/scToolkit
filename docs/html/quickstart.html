@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Documentation" href="apidocs.html" />
+    <link rel="prev" title="Welcome to scToolkit documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about-scanpy-api">About scToolkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-concepts">Key Concepts:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conventions">Conventions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_notebook_list.html">Tutorial Notebooks</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<p>This is the scToolkit Python framework for single-cell analysis.</p>
+<dl class="simple">
+<dt>It currently supports:</dt><dd><ul class="simple">
+<li><p>Pipelined Gene expression (RNA),</p></li>
+<li><p>Basic plots for TCR signaling via scirpy</p></li>
+</ul>
+</dd>
+</dl>
+<section id="about-scanpy-api">
+<span id="starter"></span><h2>About scToolkit<a class="headerlink" href="#about-scanpy-api" title="Link to this heading"></a></h2>
+<p>The framework wraps Scanpy, enforcing strict configuration, reproducibility, and
+support for multi-modal datasets on CPU-only systems and GPU optional via RAPIDS.</p>
+<p>The Pipeline revolves around a centralized <cite>config</cite>, automatic stats, and
+modular functions for preprocessing, clustering, enrichment, and plotting.</p>
+</section>
+<section id="usage">
+<span id="startpoke"></span><h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>Start by initializing your AnnData object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit.sc_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_cuda</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit.sc_plots</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_marker_dotplots</span><span class="p">,</span> <span class="n">plot_umap</span>
+
+<span class="c1"># Load AnnData object</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s2">&quot;your_file.h5ad&quot;</span><span class="p">)</span>
+
+<span class="c1"># Setup config, stats, logging, and save paths</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">setup_adata</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">param_setup</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s2">&quot;your_dataset&quot;</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;results/&quot;</span><span class="p">,</span>
+    <span class="n">use_GPU</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># GPU initialization is automaticly handled</span>
+<span class="p">)</span>
+
+<span class="c1"># Quality control and filtering</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">all_qc_preprocessing</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">plot_filtering</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">all_filters</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">plot_filtering</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Clustering and embeddings</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">Run_all_prep_steps_clustering</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">cluster_SC_scanpy_like</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+
+<span class="c1"># Downstream: DE, enrichment, scoring</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">run_downstream</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+
+<span class="c1"># UMAP + marker visualization</span>
+<span class="n">plot_umap</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">)</span>
+<span class="n">plot_marker_dotplots</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">marker_dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;CD3&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;CD3E&quot;</span><span class="p">]})</span>
+
+<span class="c1"># Save</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">save_h5ad</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;results/adata_processed.h5ad&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;results/adata_processed.h5ad&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more information on how to start see <a class="reference internal" href="scToolkit.html#module-scToolkit.sc_code" title="scToolkit.sc_code"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scToolkit.sc_code</span></code></a>.</p>
+</section>
+<section id="key-concepts">
+<h2>Key Concepts:<a class="headerlink" href="#key-concepts" title="Link to this heading"></a></h2>
+<ul>
+<li><dl class="simple">
+<dt>sc_code.setup_adata(adata, **config_kwargs):</dt><dd><p>Initializes <cite>adata</cite> with configuration, stats, and GPU setup.
+This replaces manual calls to <cite>sc_config.get_config(…)</cite> and associated setup logic.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>adata.uns[“config”]:</dt><dd><p>Stores all analysis parameters (e.g., dataset name, paths, clustering settings)
+as a centralized config object created via sc_config. Used throughout the pipeline
+for consistent behavior. For more information see <a class="reference internal" href="scToolkit.html#module-scToolkit.sc_config" title="scToolkit.sc_config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scToolkit.sc_config</span></code></a>.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p><strong>Crucial:</strong> All steps in <cite>sc_code.run_downstream()</cite>
+<strong>strictly</strong> rely on the initialized <cite>adata.uns[“config”]</cite>.
+<strong>Ensure</strong> the <cite>adata</cite> object is properly initialized <strong>with</strong>
+the pipeline <em>before proceeding</em>. This allows you to safely
+checkpoint, reload, and continue analysis across sessions, because
+all essential data is stored directly within <cite>adata</cite>.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>adata.uns[“stats”]:</dt><dd><p>Contains dataset-level summary statistics (e.g., gene/cell counts, QC metrics)
+computed during initialization. Serves as a reference for filtering and diagnostics.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is still under developement and currently supports only the
+filtering (cells and features) and a close to finished cluster stat function.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>adata.uns[“genesets”]:</dt><dd><p>A dictionary where keys are gene set names and values are lists of genes.
+Used for running gene set enrichment methods across the dataset.
+The intersection betwen the genesets here and the DEGs are automatically
+saved in the resulting tables.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>adata.uns[“ref_dict”] / [“ref_dict_upd”] / [“ref_dict_upd_subs”]:</dt><dd><p>Contain reference gene set definitions and their filtered or updated versions
+used for enrichment and comparison. This is mainly for the usage plotting these
+specific genesets in the run_downstream(… ref_dict=ref_dict).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="conventions">
+<h2>Conventions<a class="headerlink" href="#conventions" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>Argument conventions:</em></dt><dd><ul class="simple">
+<li><p><cite>key</cite>: single name from <cite>.obs</cite>, <cite>.obsm</cite>, <cite>.var_names</cite></p></li>
+<li><p><cite>keys</cite>: list or dict of keys</p></li>
+<li><p><cite>ref</cite>: mapping of group → features (genes or other modality, from <cite>.var_names</cite>)</p></li>
+<li><p><cite>ref_dict</cite>: dictionary mapping group → features</p></li>
+<li><p><cite>ref_df</cite>: dataframe mapping group → features</p></li>
+<li><p><cite>obs_key</cite>: single <cite>.obs</cite> column</p></li>
+<li><p><cite>obs_keys</cite>: list of <cite>.obs</cite> columns</p></li>
+<li><p><cite>groupby</cite>: categorical <cite>.obs</cite> column used for grouping</p></li>
+<li><p><cite>reference</cite>: comparison baseline (unrelated to <cite>ref</cite>)</p></li>
+<li><p><cite>genelist</cite>: pending standardization</p></li>
+</ul>
+</dd>
+<dt><em>Function/method naming conventions:</em></dt><dd><ul class="simple">
+<li><p><cite>plot_</cite>: plotting functions (with save/export)</p></li>
+<li><p><cite>show_</cite>: checkers/preview helpers</p></li>
+<li><p><cite>print_</cite>: printing helpers (long lines, dataframes)</p></li>
+<li><p><cite>get_</cite>: getters</p></li>
+<li><p><cite>extract_</cite>: subsetters/refiners</p></li>
+<li><p><cite>calc_</cite>: calculators</p></li>
+<li><p><cite>search_</cite>: package or database search helpers</p></li>
+<li><p><cite>check_</cite>: validation/checkers</p></li>
+<li><p><cite>ref_</cite>: helpers for <cite>ref</cite> (e.g. gene filtering)</p></li>
+<li><p><cite>df_</cite>: dataframe converters/handlers</p></li>
+<li><p><cite>update_</cite>: update config/nested structures</p></li>
+<li><p><cite>replace_</cite>: replace elements</p></li>
+<li><p><cite>filter_</cite>, <cite>tag_</cite>: filtering or tagging (QC)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to scToolkit documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apidocs.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

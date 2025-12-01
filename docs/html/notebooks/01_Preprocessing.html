@@ -1,0 +1,1601 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Cell RNA-seq Preprocessing and QC Pipeline &mdash; scToolkit  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline" href="02_clustering_preprocessing_and_GSE.html" />
+    <link rel="prev" title="Single-Cell Data Integration and Annotation Standardization" href="00_Database_curation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            scToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidocs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run_downstream_explaination.html">sc_code.run_downstream() Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorial:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../_notebook_list.html">Tutorial Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#database-curation">00_Database_curation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../_notebook_list.html#preprocessing">01_Preprocessing</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Single-Cell RNA-seq Preprocessing and QC Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SUMMARY">SUMMARY</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Imports">Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Load-the-Database-Adata-object">Load the Database Adata object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Preprocess-the-object-for-QC">Preprocess the object for QC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Summary-of-get_config-Function---Adding-the-configuration-dictionary-to-the-adata.uns[%22config%22]">Summary of <code class="docutils literal notranslate"><span class="pre">get_config</span></code> Function - Adding the configuration dictionary to the adata.uns[“config”]</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Prepare-the-object">Prepare the object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Run-the-QC-Preprocessing-and-Filtering">Run the QC Preprocessing and Filtering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Prefiltered-good-QC-violin-plots">Prefiltered good QC violin plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Postfiltering-of-likely-misannotated-Secreting-cell-types-and-Erythrocytic-lineage-in-the-databases">Postfiltering of likely misannotated Secreting cell-types and Erythrocytic lineage in the databases</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-the-QC">Plot the QC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Remove-poor-quality-sample-categories">Remove poor quality sample categories</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Some-general-keys-you-can-set">Some general keys you can set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Print-some-Stats">Print some Stats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Print-the-time">Print the time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Save-the-Object">Save the Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_notebook_list.html#single-cell-rna-seq-preprocessing-and-qc-pipeline">Single-Cell RNA-seq Preprocessing and QC Pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#clustering-preprocessing-and-gse">02_clustering_preprocessing_and_GSE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#search-for-clustering-parameters">03_search_for_clustering_parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_notebook_list.html#downstream">04_downstream</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">scToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../_notebook_list.html">Tutorial Notebooks</a></li>
+      <li class="breadcrumb-item active">Single-Cell RNA-seq Preprocessing and QC Pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/01_Preprocessing.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Single-Cell-RNA-seq-Preprocessing-and-QC-Pipeline">
+<h1>Single-Cell RNA-seq Preprocessing and QC Pipeline<a class="headerlink" href="#Single-Cell-RNA-seq-Preprocessing-and-QC-Pipeline" title="Link to this heading"></a></h1>
+<section id="SUMMARY">
+<h2>SUMMARY<a class="headerlink" href="#SUMMARY" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Initialize environment and load merged single-cell AnnData object</p></li>
+<li><p>Configure analysis parameters and define marker sets of interest</p></li>
+<li><p>Perform biological pre-filtering (Erythrocytes &amp; Secreting cells)</p></li>
+<li><p>Execute iterative QC refinement for Cells (<code class="docutils literal notranslate"><span class="pre">obs</span></code>) and Genes (<code class="docutils literal notranslate"><span class="pre">var</span></code>)</p></li>
+<li><p>Visualize QC metrics stratified by study metadata</p></li>
+<li><p>Apply filtering, clean metadata, and save preprocessed object</p></li>
+</ol>
+<section id="1.-Environment-&amp;-Data-Loading">
+<h3>1. Environment &amp; Data Loading<a class="headerlink" href="#1.-Environment-&-Data-Loading" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Load libraries and configure GPU/threading settings</p></li>
+<li><p>Load the merged raw database (<code class="docutils literal notranslate"><span class="pre">00_tonsil_blood_DISCO_merged.h5ad</span></code>)</p></li>
+<li><p>Define plotting parameters (<code class="docutils literal notranslate"><span class="pre">rcParams</span></code>) for high-quality figures</p></li>
+</ul>
+</section>
+<section id="2.-Configuration-&amp;-Marker-Setup">
+<h3>2. Configuration &amp; Marker Setup<a class="headerlink" href="#2.-Configuration-&-Marker-Setup" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Initialize <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code> via <code class="docutils literal notranslate"><span class="pre">sc_code.setup_adata</span></code> to centralize parameters</p></li>
+<li><p>Define specific immune marker lists (T cells, B cells, NK, Myeloid) for downstream validation</p></li>
+<li><p>Set experiment-specific metadata (organism, dataset name, save paths)</p></li>
+</ul>
+</section>
+<section id="3.-Biological-Heuristic-Filtering">
+<h3>3. Biological Heuristic Filtering<a class="headerlink" href="#3.-Biological-Heuristic-Filtering" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Set initial broad QC thresholds for mitochondrial content and counts</p></li>
+<li><p>Subset data to remove likely misannotated cell types based on biological logic:</p>
+<ul>
+<li><p>Remove Erythrocytes (Hb genes)</p></li>
+<li><p>Remove specific Secreting cells based on fine-grained labels and protein coding percentage</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="4.-Stratified-QC-Visualization">
+<h3>4. Stratified QC Visualization<a class="headerlink" href="#4.-Stratified-QC-Visualization" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Generate violin plots to identify outliers across different metadata levels:</p>
+<ul>
+<li><p><strong>Sample Type</strong> (Disease/Condition)</p></li>
+<li><p><strong>Study Category</strong> (Database/Source)</p></li>
+<li><p><strong>Platform</strong> (Assay protocol)</p></li>
+</ul>
+</li>
+<li><p>Customize <code class="docutils literal notranslate"><span class="pre">keys_for_qc</span></code> to focus on specific metrics (e.g., <code class="docutils literal notranslate"><span class="pre">pct_HK_gtex</span></code>, <code class="docutils literal notranslate"><span class="pre">pct_MT</span></code>)</p></li>
+</ul>
+</section>
+<section id="5.-Cell-Level-(Obs)-QC-Refinement">
+<h3>5. Cell-Level (Obs) QC Refinement<a class="headerlink" href="#5.-Cell-Level-(Obs)-QC-Refinement" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Iteratively visualize upper and lower distributions of QC metrics</p></li>
+<li><p>Refine filtering thresholds for:</p>
+<ul>
+<li><p><strong>Upper bounds:</strong> Doublets/outliers (Max genes, Max counts, Max MT%)</p></li>
+<li><p><strong>Lower bounds:</strong> Low-quality cells (Min genes, Min counts, Min unique, Min RBS%)</p></li>
+</ul>
+</li>
+<li><p>Tag cells using <code class="docutils literal notranslate"><span class="pre">sc_code.all_filters_tagging</span></code></p></li>
+</ul>
+</section>
+<section id="6.-Gene-Level-(Var)-QC-Refinement">
+<h3>6. Gene-Level (Var) QC Refinement<a class="headerlink" href="#6.-Gene-Level-(Var)-QC-Refinement" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Calculate highly variable genes and bin rankings</p></li>
+<li><p>Visualize gene metrics to determine expression cutoffs</p></li>
+<li><p>Refine thresholds for minimum counts and cell prevalence to reduce noise</p></li>
+</ul>
+</section>
+<section id="7.-Object-Cleaning-&amp;-Finalization">
+<h3>7. Object Cleaning &amp; Finalization<a class="headerlink" href="#7.-Object-Cleaning-&-Finalization" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Apply boolean masks to physically subset the AnnData object (<code class="docutils literal notranslate"><span class="pre">good_quality</span></code>)</p></li>
+<li><p>Remove specific poor-quality clinical samples (e.g., specific tonsil surgeries)</p></li>
+<li><p>Configure <code class="docutils literal notranslate"><span class="pre">sample_n_condition_keys</span></code> for downstream density plotting</p></li>
+<li><p>Print dataset statistics (cell counts, crosstabs) and execution time</p></li>
+</ul>
+</section>
+<section id="8.-Saving">
+<h3>8. Saving<a class="headerlink" href="#8.-Saving" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Save the fully preprocessed and filtered AnnData object to <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> (<code class="docutils literal notranslate"><span class="pre">01_tonsil_blood_DISCO_preprocessed.h5ad</span></code>) with compression</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="Imports">
+<h1>Imports<a class="headerlink" href="#Imports" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable autoreloading, delete this for deploying!!!</span>
+<span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="o">%</span><span class="k">load_ext</span> memory_profiler
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># Provides functions to interact with the operating system</span>
+
+
+<span class="c1"># NOTE: UNCOMMENT IF NO GPU AVAILABLE!</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>  <span class="c1"># Adjust device IDs as per your setup,</span>
+
+<span class="c1"># IBMS Libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scToolkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">sc_utils</span>
+
+
+<span class="c1"># Some libraries (e.g., decoupler) may require setting rarely used parallelization</span>
+<span class="c1"># backends. This function ensures all common thread settings are configured.</span>
+<span class="c1"># utils.set_threads(10)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/projects/Research/Internal/Proximap/ssd/envs/scToolkit_check_TD/proximap_stable_28_08_2025/lib/python3.12/site-packages/louvain/__init__.py:54: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools&lt;81.
+  from pkg_resources import get_distribution, DistributionNotFound
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CUDA devices visible: 0
+CPU times: user 6.08 s, sys: 667 ms, total: 6.75 s
+Wall time: 5.03 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Other general libraries that might be hepflull for analysis</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>  <span class="c1"># Enables regular expression matching and text processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>  <span class="c1"># Offers time-related functions (e.g., sleep, timestamps)</span>
+<span class="c1"># in Python, most assignments are references (symbolic links), not copies</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>  <span class="c1"># Creates deep copies of complex objects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>  <span class="c1"># Toolkit for analyzing single-cell gene expression data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>  <span class="c1"># Provides AnnData structure for annotated data matrices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>  <span class="c1"># Simplifies creation of attractive statistical plots</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>  <span class="c1"># Supports numerical operations and N-dimensional arrays</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Offers data structures and tools for data analysis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>  <span class="c1"># Enables plotting and figure customization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>  <span class="c1"># Gene∫Ωrates all k-length combinations of an iterable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>  <span class="c1"># Contains statistical distributions and test functions</span>
+
+
+<span class="c1"># Define rcParams for customization, notebook showing is figure.dpi, reduce to not overload the nootebook sizes</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># &quot;figure.figsize&quot;: (8, 6),  # Figure size in inches</span>
+    <span class="s2">&quot;savefig.dpi&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>       <span class="c1"># Dots per inch for saved figures</span>
+    <span class="c1">#&quot;axes.titlesize&quot;: 16,     # Title font size</span>
+    <span class="c1">#&quot;axes.labelsize&quot;: 14,     # Label font size</span>
+    <span class="c1">#&quot;xtick.labelsize&quot;: 12,    # X-axis tick label size</span>
+    <span class="c1">#&quot;ytick.labelsize&quot;: 12     # Y-axis tick label size</span>
+<span class="p">})</span>
+
+<span class="c1"># Setup matplotlib notebook backend</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Load-the-Database-Adata-object">
+<h1>Load the Database Adata object<a class="headerlink" href="#Load-the-Database-Adata-object" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">load_h5ad</span><span class="p">(</span><span class="s2">&quot;../data/00_tonsil_blood_DISCO_merged.h5ad&quot;</span><span class="p">)</span>
+<span class="c1"># Will show a warning, because it was not saved with the scToolkit functionality</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_code.py:load_h5ad - The Pickled adata.uns file is not in the same directory as the .h5ad. We could not load it. Please ensure the pickled file is in the same directory.
+</pre></div></div>
+</div>
+</section>
+<section id="Preprocess-the-object-for-QC">
+<h1>Preprocess the object for QC<a class="headerlink" href="#Preprocess-the-object-for-QC" title="Link to this heading"></a></h1>
+<section id="Summary-of-get_config-Function---Adding-the-configuration-dictionary-to-the-adata.uns[%22config%22]">
+<h2>Summary of <code class="docutils literal notranslate"><span class="pre">get_config</span></code> Function - Adding the configuration dictionary to the adata.uns[“config”]<a class="headerlink" href="#Summary-of-get_config-Function---Adding-the-configuration-dictionary-to-the-adata.uns[%22config%22]" title="Link to this heading"></a></h2>
+<p>This function builds a detailed configuration dictionary for a single-cell analysis pipeline. It centralizes all parameters for preprocessing, clustering, visualization, and saving results.</p>
+<hr class="docutils" />
+<section id="⚙️-General-Analysis-Settings">
+<h3>⚙️ General Analysis Settings<a class="headerlink" href="#⚙️-General-Analysis-Settings" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Controls CPU cores, GPU usage, random seed, and overwrite behavior.</p></li>
+<li><p>Handles normalization, scaling, log transformation, and QC options.</p></li>
+<li><p>Can be accessed later via <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;general&quot;]</span></code>.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="🧬-Data-&amp;-Experiment-Setup">
+<h3>🧬 Data &amp; Experiment Setup<a class="headerlink" href="#🧬-Data-&-Experiment-Setup" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Stores experiment name, dataset name, parameter setup, and save paths.</p></li>
+<li><p>Defines organism-specific keys (mitochondrial, ribosomal, pseudogenes, hemoglobin, etc.).</p></li>
+<li><p>Accessible through <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;general&quot;][&quot;organism&quot;]</span></code>, <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;general&quot;][&quot;path_to_database&quot;]</span></code>, and similar keys.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="🧪-Gene-and-Marker-Configuration">
+<h3>🧪 Gene and Marker Configuration<a class="headerlink" href="#🧪-Gene-and-Marker-Configuration" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Defines marker genes to include or exclude from analysis.</p></li>
+<li><p>Supports adding marker genes to highly variable gene selection.</p></li>
+<li><p>Loads QC gene sets depending on organism (e.g., human or mouse).</p></li>
+<li><p>Marker options are in <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;marker_genes_to_exclude_from_filtering&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;marker_genes_to_include_in_highly_variables&quot;]</span></code>.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="🔬-Preprocessing-&amp;-Clustering">
+<h3>🔬 Preprocessing &amp; Clustering<a class="headerlink" href="#🔬-Preprocessing-&-Clustering" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Configures filtering, normalization, scaling, PCA, neighborhood graph, clustering (Leiden), and UMAP parameters.</p></li>
+<li><p>Supports automatic PCA dimension selection.</p></li>
+<li><p><strong>Important:</strong> <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;pp&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;tl&quot;]</span></code> hold the <strong>standard parameter dictionaries</strong> for Scanpy preprocessing (<code class="docutils literal notranslate"><span class="pre">pp</span></code>) and tools (<code class="docutils literal notranslate"><span class="pre">tl</span></code>) functions. Use them directly in Scanpy calls for reproducibility and consistency.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="🎨-Visualization-Options">
+<h3>🎨 Visualization Options<a class="headerlink" href="#🎨-Visualization-Options" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Extensive settings for UMAPs, heatmaps, dot plots, violins, dendrograms, and more.</p></li>
+<li><p>Defines which plots to show or save (figures, CSVs, etc.).</p></li>
+<li><p>Visualization parameters are in <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;pl&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;to_plot&quot;]</span></code>.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="💾-Saving-&amp;-Output">
+<h3>💾 Saving &amp; Output<a class="headerlink" href="#💾-Saving-&-Output" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Sets file formats for saving results (CSV, Excel).</p></li>
+<li><p>Supports saving intermediate data (e.g., normalized or scaled counts).</p></li>
+<li><p>Includes options for saving cluster stats and differential expression results.</p></li>
+<li><p>Controlled via <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;general&quot;][&quot;save_figures&quot;]</span></code>, <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;][&quot;to_create&quot;]</span></code>, and related keys.</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>✅ In short:</strong> <code class="docutils literal notranslate"><span class="pre">get_config</span></code> builds a single, flexible setup stored in <code class="docutils literal notranslate"><span class="pre">adata.uns[&quot;config&quot;]</span></code>, making it easy to access, adjust, and reuse throughout your single-cell analysis workflow — including direct use in Scanpy.</p>
+</section>
+</section>
+<section id="Prepare-the-object">
+<h2>Prepare the object<a class="headerlink" href="#Prepare-the-object" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Markers that are specific for the experiment, and will be saved in the adata object and used as defaults for some plots.</span>
+<span class="n">markers_of_interest</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;CD3D&quot;</span><span class="p">,</span> <span class="s2">&quot;CD4&quot;</span><span class="p">,</span> <span class="s2">&quot;CD8A&quot;</span><span class="p">,</span> <span class="s2">&quot;FOXP3&quot;</span><span class="p">,</span>       <span class="c1"># T cells</span>
+    <span class="s2">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;CD19&quot;</span><span class="p">,</span> <span class="s2">&quot;MZB1&quot;</span><span class="p">,</span> <span class="s2">&quot;XBP1&quot;</span><span class="p">,</span>      <span class="c1"># B cells / plasma</span>
+    <span class="s2">&quot;NCAM1&quot;</span><span class="p">,</span> <span class="s2">&quot;NKG7&quot;</span><span class="p">,</span>                      <span class="c1"># NK cells</span>
+    <span class="s2">&quot;CD14&quot;</span><span class="p">,</span> <span class="s2">&quot;FCGR3A&quot;</span><span class="p">,</span> <span class="s2">&quot;C1QA&quot;</span><span class="p">,</span> <span class="s2">&quot;LYZ&quot;</span><span class="p">,</span>      <span class="c1"># Monocytes/macrophages</span>
+    <span class="s2">&quot;FCER1A&quot;</span><span class="p">,</span> <span class="s2">&quot;CLEC9A&quot;</span><span class="p">,</span>                   <span class="c1"># Dendritic cells (cDC2 / cDC1)</span>
+    <span class="s2">&quot;CXCR5&quot;</span><span class="p">,</span> <span class="s2">&quot;BCL6&quot;</span><span class="p">,</span> <span class="s2">&quot;PDCD1&quot;</span><span class="p">,</span> <span class="s2">&quot;MKI67&quot;</span>     <span class="c1"># Tonsil germinal center / Tfh / proliferation</span>
+<span class="p">]</span>
+
+<span class="n">sc_code</span><span class="o">.</span><span class="n">setup_adata</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">param_setup</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+                           <span class="n">dataset_name</span><span class="o">=</span><span class="s2">&quot;tonsil_blood&quot;</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;analysis/&quot;</span><span class="p">,</span>
+                           <span class="n">use_GPU</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">organism</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">selected_gene_markers</span><span class="o">=</span><span class="n">markers_of_interest</span><span class="p">,</span>
+                           <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Run-the-QC-Preprocessing-and-Filtering">
+<h2>Run the QC Preprocessing and Filtering<a class="headerlink" href="#Run-the-QC-Preprocessing-and-Filtering" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="c1"># You can tag the cells by defaults before this step and still refine them afterwards</span>
+<span class="c1"># by running the all_filters_tagging after plotting the qc violins</span>
+<span class="c1"># ##################################################</span>
+<span class="c1"># Choose the qc criteria to filter and visualize</span>
+<span class="c1"># ----------</span>
+<span class="c1"># Filter cells</span>
+<span class="c1"># ----------</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_n_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">25000</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># higher would be better, but usually the data we get has poor quality</span>
+<span class="c1"># adata.uns[&quot;config&quot;][&quot;pp&quot;][&quot;filter_qc_var_obs&quot;][&quot;max_pct_HG&quot;] = 1  # For filtereing Erythrocytes but they will be removed by the pseudogene filtering step later on</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_pct_MT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>  <span class="c1"># To ensure less close-to-dying cells</span>
+
+<span class="c1"># ----------</span>
+<span class="c1"># Filter genes</span>
+<span class="c1"># ----------</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_cells&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># higher would be better, but usually the data we get has poor quality</span>
+<span class="c1"># ##################################################</span>
+<span class="c1"># Run qc</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">all_qc_preprocessing</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+WARNING:sc_utils.py:flag_gene_family - Gene set identifiers GTF_MT GTF_TEC_genes is/are empty, deleting it from the analysis
+INFO:sc_code.py:all_qc_preprocessing - flag_gene_family: 0.0822446346282959
+INFO:sc_code.py:all_qc_preprocessing - QC_metrics: 112.65068221092224
+INFO:sc_code.py:all_qc_preprocessing - After_flag_gene_family: 0.008282661437988281
+INFO:sc_code.py:all_qc_preprocessing - get_n_unique_n_max_count: 44.12029767036438
+INFO:sc_code.py:all_qc_preprocessing - after_get_n_unique: 84.50948476791382
+INFO:sc_code.py:all_filters_tagging - Number of good quality (cells, genes): (703648, 13966); bad quality: (17027, 9489); time: 0.72s
+INFO:sc_code.py:all_qc_preprocessing - all_filters_tagging: 0.7193834781646729
+INFO:sc_code.py:all_qc_preprocessing - Tagged 17027 cells and 9489 genes as bad quality.
+INFO:sc_code.py:all_qc_preprocessing - QC keys for visualization: [&#39;max_count&#39;, &#39;n_counts&#39;, &#39;n_genes&#39;, &#39;n_unique&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HG&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;top_10_ratio&#39;].
+You can change them by accessing it via: adata.uns[&#34;config&#34;][&#34;general&#34;][&#34;keys_for_qc&#34;][&#34;obs&#34;] and the corresponding regex adata.uns[&#34;config&#34;][&#34;qc&#34;][&#34;gene_identifiers&#34;]
+CPU times: user 5min 15s, sys: 18.5 s, total: 5min 33s
+Wall time: 4min 2s
+</pre></div></div>
+</div>
+</section>
+<section id="Prefiltered-good-QC-violin-plots">
+<h2>Prefiltered good QC violin plots<a class="headerlink" href="#Prefiltered-good-QC-violin-plots" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">violin_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 720675 × 23455
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Postfiltering-of-likely-misannotated-Secreting-cell-types-and-Erythrocytic-lineage-in-the-databases">
+<h2>Postfiltering of likely misannotated Secreting cell-types and Erythrocytic lineage in the databases<a class="headerlink" href="#Postfiltering-of-likely-misannotated-Secreting-cell-types-and-Erythrocytic-lineage-in-the-databases" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">reset_option</span><span class="p">(</span><span class="s2">&quot;display.max_rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="n">ssubsetter_pr_coding</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_HGNC_protein_coding_gene&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">80</span>
+
+<span class="n">secreting_labels</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Plasma cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preMature IgG+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgG+ PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgA+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgG+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived IgG+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived IgA+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;preMature IgM+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MBC derived early PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgD PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Short lived IgM+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Mature IgM+ PC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgM+ PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DZ migratory PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Early PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Transitional PB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Plasma cell precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PC committed Light Zone GCBC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IgM+ early PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PB committed early PC precursor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Megakaryocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Red blood cell&quot;</span>
+<span class="p">]</span>
+
+<span class="n">hb_labels</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Megakaryocyte&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Red blood cell&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plasma cells</span>
+<span class="n">ssubsetter_secreting</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">secreting_labels</span><span class="p">)</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">ssubsetter_secreting</span> <span class="o">|</span> <span class="n">ssubsetter_pr_coding</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adata</span>
+<span class="c1"># adata[ssubsetter_secreting | ssubsetter_pr_coding].obs[&quot;pct_HGNC_protein_coding_gene&quot;].hist(bins=100);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 710750 × 23455
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Erythrocytes</span>
+<span class="n">ssubsetter_hb</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_HG&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">20</span>
+<span class="n">subsetter_secreting_2</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_finegrained_combined&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">hb_labels</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Subset the object</span>
+<span class="n">keep_mask</span> <span class="o">=</span> <span class="n">ssubsetter_hb</span> <span class="o">|</span> <span class="n">subsetter_secreting_2</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">keep_mask</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 710499 × 23455
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Plot-the-QC">
+<h2>Plot the QC<a class="headerlink" href="#Plot-the-QC" title="Link to this heading"></a></h2>
+<section id="Plot-overall-QC,-good-to-identify-samples/studies/protocols-outliers">
+<h3>Plot overall QC, good to identify samples/studies/protocols outliers<a class="headerlink" href="#Plot-overall-QC,-good-to-identify-samples/studies/protocols-outliers" title="Link to this heading"></a></h3>
+<section id="Here-we-investigate-the-sample_type,-basically-Disease-categories">
+<h4>Here we investigate the sample_type, basically Disease categories<a class="headerlink" href="#Here-we-investigate-the-sample_type,-basically-Disease-categories" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;sample_type&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_27_0.png" src="../_images/notebooks_01_Preprocessing_27_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 17min 5s, sys: 4.58 s, total: 17min 9s
+Wall time: 7min 7s
+</pre></div></div>
+</div>
+</section>
+<section id="Here-we-investigate-the-study_category,-basically-Database-and-tissue">
+<h4>Here we investigate the study_category, basically Database and tissue<a class="headerlink" href="#Here-we-investigate-the-study_category,-basically-Database-and-tissue" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;study_category&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_29_0.png" src="../_images/notebooks_01_Preprocessing_29_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 12min 15s, sys: 2.82 s, total: 12min 18s
+Wall time: 6min 59s
+</pre></div></div>
+</div>
+</section>
+<section id="Here-we-investigate-the-platform/protocol/assay">
+<h4>Here we investigate the platform/protocol/assay<a class="headerlink" href="#Here-we-investigate-the-platform/protocol/assay" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;platform&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mf">.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_31_0.png" src="../_images/notebooks_01_Preprocessing_31_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Excourse:-The-precalculated-QC-measures-in-the-config">
+<h3>Excourse: The precalculated QC measures in the config<a class="headerlink" href="#Excourse:-The-precalculated-QC-measures-in-the-config" title="Link to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generally there are 2 different obs/var keys for QC in the adata.uns[&quot;config&quot;][&quot;general&quot;]</span>
+<span class="c1"># &quot;keys_for_qc&quot; for the most informative ones and &quot;keys_for_qc_all&quot; for all, including cell/tissue-type specific ones</span>
+<span class="c1"># these are dicts with the keys &quot;obs&quot; for the obs keys and &quot;var&quot; for the var keys</span>
+
+<span class="c1"># Optionally you can also only plot a subset, because not all are so informative and it takes quiet a while to create the plots</span>
+<span class="c1"># here a subset of adata.uns[&quot;config&quot;][&quot;general&quot;][&quot;keys_for_qc&quot;][&quot;obs&quot;]</span>
+<span class="n">old_keys_for_qc</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;keys_for_qc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">this_vars_for_qc</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;n_genes&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;n_counts&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;n_unique&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;max_count&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;top_10_ratio&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_HK_gtex&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;pct_HK_klijn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_GTF_IG_genes&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;pct_GTF_TR_genes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_GTF_protein_coding&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_HGNC_pseudogene&#39;</span><span class="p">,</span> <span class="c1">#</span>
+    <span class="s1">&#39;pct_MT&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_RBS&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_HG&#39;</span>
+<span class="p">]</span>
+
+<span class="c1"># Now you can also overwrite the config to use the plot_qc_violins</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;keys_for_qc&quot;</span><span class="p">][</span><span class="s2">&quot;obs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">this_vars_for_qc</span>
+
+<span class="c1"># The alternative is to use the plot_qc_violins with the keys</span>
+<span class="c1"># sc_plots.plot_qc_violins(</span>
+<span class="c1">#         adata[adata.obs[&quot;good_quality&quot;]],</span>
+<span class="c1">#         keys=this_vars_for_qc,</span>
+<span class="c1">#         groupby=&quot;condition&quot;,</span>
+<span class="c1">#         clip_intervals=[.9, 1],</span>
+<span class="c1">#         do_remove=True)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="c1"># Here we will only see the selected ones</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;study_category&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Here, we don&#39;t clip, 0 is the min and 1 the max.</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_34_0.png" src="../_images/notebooks_01_Preprocessing_34_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 8min 12s, sys: 1.88 s, total: 8min 14s
+Wall time: 4min 41s
+</pre></div></div>
+</div>
+</section>
+<section id="QC-Refinement-OBS">
+<h3>QC Refinement OBS<a class="headerlink" href="#QC-Refinement-OBS" title="Link to this heading"></a></h3>
+<section id="Plot-the-upper-levels">
+<h4>Plot the upper levels<a class="headerlink" href="#Plot-the-upper-levels" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;sample_type&quot;</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mf">.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># Top 10%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_37_0.png" src="../_images/notebooks_01_Preprocessing_37_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 2min 45s, sys: 1.26 s, total: 2min 46s
+Wall time: 52.9 s
+</pre></div></div>
+</div>
+</section>
+<section id="Refine/define-the-upper-filtering-thresholds">
+<h4>Refine/define the upper filtering thresholds<a class="headerlink" href="#Refine/define-the-upper-filtering-thresholds" title="Link to this heading"></a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_n_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_n_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">18000</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_pct_MT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Paper-plots">
+<h4>Paper plots<a class="headerlink" href="#Paper-plots" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optionally you can also only plot a subset, because not all are so informative and it takes quiet a while to create the plots</span>
+<span class="c1"># here a subset of adata.uns[&quot;config&quot;][&quot;general&quot;][&quot;keys_for_qc&quot;][&quot;obs&quot;]</span>
+<span class="n">plot_keys</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;n_genes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;n_counts&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;n_unique&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_HK_gtex&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_GTF_IG_genes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pct_HGNC_pseudogene&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;sample_type&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mf">.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">keys</span><span class="o">=</span><span class="n">plot_keys</span><span class="p">,</span>
+        <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;../Figures/01_violin_doremove_True.png&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_41_0.png" src="../_images/notebooks_01_Preprocessing_41_0.png" />
+</div>
+</div>
+</section>
+<section id="Plot-the-lower-levels">
+<h4>Plot the lower levels<a class="headerlink" href="#Plot-the-lower-levels" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+        <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;sample_type&quot;</span><span class="p">,</span>
+        <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">],</span>  <span class="c1"># Lower 10%</span>
+        <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_43_0.png" src="../_images/notebooks_01_Preprocessing_43_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 2min 42s, sys: 956 ms, total: 2min 43s
+Wall time: 52.9 s
+</pre></div></div>
+</div>
+</section>
+<section id="Refine/define-the-lower-filtering-thresholds">
+<h4>Refine/define the lower filtering thresholds<a class="headerlink" href="#Refine/define-the-lower-filtering-thresholds" title="Link to this heading"></a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">700</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;min_pct_RBS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.5</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_obs&quot;</span><span class="p">][</span><span class="s2">&quot;max_pct_HGNC_pseudogene&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># This removes the Erythrocytes and some Secreting cells</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="QC-Refinement-VAR">
+<h3>QC Refinement VAR<a class="headerlink" href="#QC-Refinement-VAR" title="Link to this heading"></a></h3>
+<section id="Excourse-Binning-a-dataframe---Gene-QC-grouping-on-Highly-Variable-genes.">
+<h4>Excourse Binning a dataframe - Gene QC grouping on Highly Variable genes.<a class="headerlink" href="#Excourse-Binning-a-dataframe---Gene-QC-grouping-on-Highly-Variable-genes." title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: This is automatically calculated in a later step (Run_all_prep_steps_clustering)</span>
+<span class="c1"># Here we only show this to show 2 features.</span>
+<span class="c1"># We wrote our own method for highly variable genes:</span>
+<span class="n">sc_utils</span><span class="o">.</span><span class="n">calc_highly_variable_genes_unique_based</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;highly_variable_rank&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+       <span class="p">[</span><span class="s2">&quot;highly_variable_rank&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;highly_variable_rank&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+       <span class="p">[</span><span class="s2">&quot;highly_variable_rank&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># And here a function to bin a column into a categorical one-</span>
+<span class="n">sc_utils</span><span class="o">.</span><span class="n">bin_column</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">,</span> <span class="s2">&quot;highly_variable_rank&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+IGKC     23455
+IGLC2    23454
+Name: highly_variable_rank, dtype: uint16
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TAB3-AS2       2
+C9orf41-AS1    1
+Name: highly_variable_rank, dtype: uint16
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="c1"># Here we show the binary highly_variable</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;highly_variable&quot;</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.98</span><span class="p">],</span> <span class="n">base_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_49_0.png" src="../_images/notebooks_01_Preprocessing_49_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 34.7 s, sys: 35.4 ms, total: 34.7 s
+Wall time: 4.83 s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="c1"># Here we show the binned version of the ranks</span>
+<span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;highly_variable_rank_binned&quot;</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.98</span><span class="p">],</span> <span class="n">base_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_50_0.png" src="../_images/notebooks_01_Preprocessing_50_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 35.5 s, sys: 29.8 ms, total: 35.5 s
+Wall time: 4.9 s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># Top 10%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_51_0.png" src="../_images/notebooks_01_Preprocessing_51_0.png" />
+</div>
+</div>
+</section>
+<section id="id1">
+<h4>Plot the upper levels<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mf">.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># Top 10%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_53_0.png" src="../_images/notebooks_01_Preprocessing_53_0.png" />
+</div>
+</div>
+</section>
+<section id="Refine/define-the-lower-upper-thresholds">
+<h4>Refine/define the lower upper thresholds<a class="headerlink" href="#Refine/define-the-lower-upper-thresholds" title="Link to this heading"></a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Nothing to do, they look ok</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h4>Plot the lower levels<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">],</span>  <span class="c1"># lower 10%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_57_0.png" src="../_images/notebooks_01_Preprocessing_57_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.2</span><span class="p">],</span>  <span class="c1"># lower 20%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_58_0.png" src="../_images/notebooks_01_Preprocessing_58_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.5</span><span class="p">],</span>  <span class="c1"># lower 50%</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_59_0.png" src="../_images/notebooks_01_Preprocessing_59_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">[:,</span> <span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+    <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.5</span><span class="p">],</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_60_0.png" src="../_images/notebooks_01_Preprocessing_60_0.png" />
+</div>
+</div>
+</section>
+<section id="id3">
+<h4>Refine/define the lower filtering thresholds<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_cells&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_n_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">][</span><span class="s2">&quot;pp&quot;</span><span class="p">][</span><span class="s2">&quot;filter_qc_var_var&quot;</span><span class="p">][</span><span class="s2">&quot;min_max_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Apply-the-QC-Tagging">
+<h4>Apply the QC Tagging<a class="headerlink" href="#Apply-the-QC-Tagging" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_code</span><span class="o">.</span><span class="n">all_filters_tagging</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:all_filters_tagging - Number of good quality (cells, genes): (619282, 8830); bad quality: (91217, 14625); time: 0.66s
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Visualize-Post-Filtering">
+<h3>Visualize Post Filtering<a class="headerlink" href="#Visualize-Post-Filtering" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">],</span> <span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+    <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;sample_type&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_66_0.png" src="../_images/notebooks_01_Preprocessing_66_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sc_plots</span><span class="o">.</span><span class="n">plot_qc_violins</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">],</span> <span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;good_quality&quot;</span><span class="p">]],</span>
+    <span class="n">var_keys_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">clip_intervals</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">.95</span><span class="p">],</span>
+    <span class="n">do_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_Preprocessing_67_0.png" src="../_images/notebooks_01_Preprocessing_67_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">violin_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">violin_start</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Clean-the-Object">
+<h3>Clean the Object<a class="headerlink" href="#Clean-the-Object" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tag the cells and subset NOTE: IT RETURNS THE FILTERED OBJECT &quot;adata =&quot; is needed!</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc_code</span><span class="o">.</span><span class="n">all_filters_tagging</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">apply_filters</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># or manual subsetting</span>
+<span class="c1"># adata = adata[adata.obs[&quot;good_quality&quot;], adata.var[&quot;good_quality&quot;]].copy()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+INFO:sc_code.py:all_filters_tagging - Number of good quality (cells, genes): (619282, 8830); bad quality: (91217, 14625); time: 0.69s
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Remove-poor-quality-sample-categories">
+<h2>Remove poor quality sample categories<a class="headerlink" href="#Remove-poor-quality-sample-categories" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="o">~</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;sample_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span>
+    <span class="s2">&quot;tonsil removed during surgery for superficial squamous carcinoma of the laryngeal vocal cord&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tonsil removed during surgery for benign squamous pharyngeal papillomatosis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tonsil removed during surgery for oropharyngeal papillomatosis&quot;</span><span class="p">])]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Some-general-keys-you-can-set">
+<h1>Some general keys you can set<a class="headerlink" href="#Some-general-keys-you-can-set" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+
+<span class="c1"># To plot default categorical obs values as density plots automatically for the downstream,</span>
+<span class="c1"># you have to add them here</span>
+
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;sample_n_condition_keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sample_type&quot;</span><span class="p">,</span> <span class="s2">&quot;study_category&quot;</span><span class="p">,</span> <span class="s2">&quot;platform&quot;</span><span class="p">]</span>
+<span class="c1"># NOTE: make sure these are categorcial values!</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;sample_n_condition_keys&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> is not in the obs!&#39;</span><span class="p">)</span>
+        <span class="k">continue</span>
+    <span class="k">if</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;category&quot;</span><span class="p">:</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Print-some-Stats">
+<h1>Print some Stats<a class="headerlink" href="#Print-some-Stats" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;ct_broad&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ct_broad
+B cell            301851
+T/NK cell         225787
+Monocyte           28770
+Plasma cell         6955
+Dendritic cell      3969
+Granulocyte         3108
+Myeloid cell        1273
+Immune cell         1165
+unknown              237
+Name: count, dtype: int64
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;sample_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+sample_type
+tonsillitis                           244298
+sleep apnea                            96118
+Normal                                 81952
+normal                                 65055
+blood of non-tumor disease patient     51260
+blood of solid tumor patient           19272
+non-tumor disease tissue               15160
+Name: count, dtype: int64
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;sample_type&quot;</span><span class="p">],</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>study_category</th>
+      <th>disco_blood</th>
+      <th>disco_tonsil</th>
+      <th>tonsil_atlas</th>
+    </tr>
+    <tr>
+      <th>sample_type</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Normal</th>
+      <td>0</td>
+      <td>81952</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>blood of non-tumor disease patient</th>
+      <td>51260</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>blood of solid tumor patient</th>
+      <td>19272</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>non-tumor disease tissue</th>
+      <td>15160</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>normal</th>
+      <td>65055</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>sleep apnea</th>
+      <td>0</td>
+      <td>0</td>
+      <td>96118</td>
+    </tr>
+    <tr>
+      <th>tonsillitis</th>
+      <td>0</td>
+      <td>0</td>
+      <td>244298</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;platform&quot;</span><span class="p">],</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;study_category&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>study_category</th>
+      <th>disco_blood</th>
+      <th>disco_tonsil</th>
+      <th>tonsil_atlas</th>
+    </tr>
+    <tr>
+      <th>platform</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10x3'v2</th>
+      <td>36618</td>
+      <td>60340</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>10x3'v3</th>
+      <td>55654</td>
+      <td>21612</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>10x5'v2</th>
+      <td>58475</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>nan</th>
+      <td>0</td>
+      <td>0</td>
+      <td>340416</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AnnData object with n_obs × n_vars = 573115 × 8830
+    obs: &#39;orig.ident&#39;, &#39;ncount_rna&#39;, &#39;nfeature_rna&#39;, &#39;sample&#39;, &#39;sample_id&#39;, &#39;project_id&#39;, &#39;sample_type&#39;, &#39;disease&#39;, &#39;tissue&#39;, &#39;platform&#39;, &#39;disease_subtype&#39;, &#39;time_point&#39;, &#39;subject_id&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;race&#39;, &#39;infection&#39;, &#39;disease_stage&#39;, &#39;mutation&#39;, &#39;predicted_cell_type&#39;, &#39;ct&#39;, &#39;sub.cluster&#39;, &#39;pct_gtex&#39;, &#39;pct_hpa&#39;, &#39;pct_hrt&#39;, &#39;pct_cellminer&#39;, &#39;pct_klijn&#39;, &#39;pct_IG_C_gene&#39;, &#39;pct_IG_C_pseudogene&#39;, &#39;pct_IG_J_gene&#39;, &#39;pct_IG_V_gene&#39;, &#39;pct_IG_V_pseudogene&#39;, &#39;pct_TR_C_gene&#39;, &#39;pct_TR_J_gene&#39;, &#39;pct_TR_J_pseudogene&#39;, &#39;pct_TR_V_gene&#39;, &#39;pct_TR_V_pseudogene&#39;, &#39;pct_lncRNA&#39;, &#39;pct_miRNA&#39;, &#39;pct_protein_coding&#39;, &#39;pct_ribozyme&#39;, &#39;pct_snRNA&#39;, &#39;pct_snoRNA&#39;, &#39;pct_pseudogenes_hg&#39;, &#39;n_unique&#39;, &#39;study_category&#39;, &#39;barcode&#39;, &#39;donor_id&#39;, &#39;gem_id&#39;, &#39;library_name&#39;, &#39;assay&#39;, &#39;sex&#39;, &#39;age_group&#39;, &#39;hospital&#39;, &#39;cohort_type&#39;, &#39;cause_for_tonsillectomy&#39;, &#39;is_hashed&#39;, &#39;preservation&#39;, &#39;annotation_level_1&#39;, &#39;annotation_level_1_probability&#39;, &#39;annotation_figure_1&#39;, &#39;annotation_20220215&#39;, &#39;annotation_20220619&#39;, &#39;annotation_20230508&#39;, &#39;annotation_20230508_probability&#39;, &#39;UMAP_1_level_1&#39;, &#39;UMAP_2_level_1&#39;, &#39;UMAP_1_20220215&#39;, &#39;UMAP_2_20220215&#39;, &#39;UMAP_1_20230508&#39;, &#39;UMAP_2_20230508&#39;, &#39;type&#39;, &#39;projectid&#39;, &#39;cell_sorting&#39;, &#39;subjectid&#39;, &#39;processstatus&#39;, &#39;rna_snn_res.0.8&#39;, &#39;seurat_clusters&#39;, &#39;percent.mt&#39;, &#39;percent.rp&#39;, &#39;ct_fixed&#39;, &#39;ct_broad&#39;, &#39;ct_finegrained_combined&#39;, &#39;n_genes&#39;, &#39;n_counts&#39;, &#39;pct_HK_gtex&#39;, &#39;pct_HK_cellminer&#39;, &#39;pct_HK_hpa&#39;, &#39;pct_HK_klijn&#39;, &#39;pct_HK_human&#39;, &#39;pct_HK_hrt&#39;, &#39;pct_HK_hk_union&#39;, &#39;pct_HK_hk_intersect&#39;, &#39;pct_HK_hk_intersect_no_hrt&#39;, &#39;pct_GTF_IG_genes&#39;, &#39;pct_GTF_processed_transcripts&#39;, &#39;pct_GTF_pseudogenes&#39;, &#39;pct_GTF_TR_genes&#39;, &#39;pct_GTF_RBS&#39;, &#39;pct_GTF_protein_coding&#39;, &#39;pct_HGNC_non_coding_RNA&#39;, &#39;pct_HGNC_other&#39;, &#39;pct_HGNC_protein_coding_gene&#39;, &#39;pct_HGNC_pseudogene&#39;, &#39;pct_MT&#39;, &#39;pct_RBS&#39;, &#39;pct_MTRBS&#39;, &#39;pct_PSEUDO&#39;, &#39;pct_HG&#39;, &#39;max_count&#39;, &#39;top_5_ratio&#39;, &#39;top_10_ratio&#39;, &#39;good_quality&#39;
+    var: &#39;HK_gtex&#39;, &#39;HK_cellminer&#39;, &#39;HK_hpa&#39;, &#39;HK_klijn&#39;, &#39;HK_human&#39;, &#39;HK_hrt&#39;, &#39;HK_hk_union&#39;, &#39;HK_hk_intersect&#39;, &#39;HK_hk_intersect_no_hrt&#39;, &#39;GTF_IG_genes&#39;, &#39;GTF_processed_transcripts&#39;, &#39;GTF_pseudogenes&#39;, &#39;GTF_TR_genes&#39;, &#39;GTF_RBS&#39;, &#39;GTF_protein_coding&#39;, &#39;HGNC_non_coding_RNA&#39;, &#39;HGNC_other&#39;, &#39;HGNC_protein_coding_gene&#39;, &#39;HGNC_pseudogene&#39;, &#39;MT&#39;, &#39;RBS&#39;, &#39;MTRBS&#39;, &#39;PSEUDO&#39;, &#39;HG&#39;, &#39;n_cells&#39;, &#39;mean_counts&#39;, &#39;n_counts&#39;, &#39;n_unique&#39;, &#39;pct_cells&#39;, &#39;max_count&#39;, &#39;good_quality&#39;, &#39;highly_variable&#39;, &#39;highly_variable_rank&#39;, &#39;highly_variable_rank_binned&#39;
+    uns: &#39;config&#39;, &#39;stats&#39;
+    obsm: &#39;X_pca&#39;, &#39;X_umap&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Print-the-time">
+<h1>Print the time<a class="headerlink" href="#Print-the-time" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished Full Preprocessing in </span><span class="si">{</span><span class="n">end</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
+<span class="c1"># print(f&quot;pairplots took {pairplot_end:.2f} seconds.&quot;)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;violinplots took </span><span class="si">{</span><span class="n">violin_end</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
+<span class="c1"># print(f&quot;Finished Full Preprocessing in without pairplots and violinplots {end - pairplot_end - violin_end:.2f} seconds.&quot;)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Finished Full Preprocessing in 1931.46 seconds.
+violinplots took 1630.14 seconds.
+</pre></div></div>
+</div>
+</section>
+<section id="Save-the-Object">
+<h1>Save the Object<a class="headerlink" href="#Save-the-Object" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sc_code</span><span class="o">.</span><span class="n">save_h5ad</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;../data/01_tonsil_blood_DISCO_preprocessed.h5ad&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;lzf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 30.3 s, sys: 1.21 s, total: 31.6 s
+Wall time: 31.7 s
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="00_Database_curation.html" class="btn btn-neutral float-left" title="Single-Cell Data Integration and Annotation Standardization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="02_clustering_preprocessing_and_GSE.html" class="btn btn-neutral float-right" title="Single-Cell Gene Set Enrichment &amp; Marker Selection Pipeline" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Krolla.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,537 @@
+Tutorial Notebooks
+==================
+
+- :doc:`00 Database Curation <notebooks/00_Database_curation>`
+- :doc:`01 Preprocessing <notebooks/01_Preprocessing>`
+- :doc:`02 Clustering Preprocessing And Gse <notebooks/02_clustering_preprocessing_and_GSE>`
+- :doc:`03 Search For Clustering Parameters <notebooks/03_search_for_clustering_parameters>`
+- :doc:`04 Downstream <notebooks/04_downstream>`
+
+═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════
+
+
+00_Database_curation
+--------------------
+
+.. toctree::
+   :caption: 00_Database_curation
+   :hidden:
+
+   notebooks/00_Database_curation
+
+Single-Cell Data Integration and Annotation Standardization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SUMMARY
+"""""""
+
+1. Initialize environment and load multiple source datasets (DISCO
+   Blood, DISCO Tonsil, Tonsil Atlas)
+2. Harmonize metadata and subset specific project IDs to prevent data
+   duplication
+3. Concatenate datasets into a single AnnData object and perform some
+   basic filtering
+4. Implement a **Cell Ontology Tree** to standardize hierarchical cell
+   type nomenclature
+5. Map fine-grained annotations to broad lineages using a custom tree
+   traversal algorithm
+6. Filter rare cell populations and standardized data types for export
+
+1. Environment & Data Loading
+
+
+- Load ``scanpy``, ``numpy``, ``pandas``, and custom ``scToolkit``
+  libraries
+- Load three distinct ``.h5ad`` datasets:
+
+  - **DISCO Blood:** Reference blood dataset
+  - **DISCO Tonsil:** Public tonsil samples (subsetted by GSE ID to
+    exclude Tonsil Atlas samples)
+  - **Tonsil Atlas:** High-quality tonsil atlas dataset
+
+- Clean Tonsil Atlas metadata by removing pre-calculated metrics (e.g.,
+  ``pDNN``, ``scrublet`` scores) to ensure compatibility
+
+2. Data Merging
+
+
+- Standardize ``study_category`` labels (``disco_blood``,
+  ``disco_tonsil``, ``tonsil_atlas``)
+- Concatenate all objects using ``ad.concat`` (outer join)
+- Filter out genes with extremely low expression (sum < 100 counts)
+  across the merged dataset
+
+3. Hierarchical Cell Type Mapping (CellTree)
+
+
+- Define a ``CellTree`` class to manage cell type hierarchies (Parent
+  :math:`\to` Child relationships)
+- Load ``disco_ct_tree.csv`` to build the ontology structure and fix
+  circular dependencies
+- Define **“Special Cells”** (e.g., B cell, T/NK cell, Myeloid cell) to
+  serve as anchors for broad lineage assignment
+
+4. Annotation Standardization
+
+
+- **Atlas Mapping:** Map manual Tonsil Atlas annotations to the DISCO
+  ontology using a dictionary (``map_atlas_ct_to_ct_tree``)
+- **Broad Labeling:**
+
+  - Create ``ct_broad``: Map fine-grained labels to the closest “Special
+    Cell” parent using tree traversal
+  - Apply specific logic for Tonsil Atlas samples using ``broad_map`` to
+    ensure lineage consistency (e.g., grouping various B cell states
+    into “B cell”)
+
+- **Fine-grained Labeling:** Consolidate original and mapped labels into
+  ``ct_finegrained_combined``
+
+5. Rare Population Filtering
+
+
+- Check cell type abundance
+- Remove cell categories with **< 200 cells** based on sequencing depth
+  limitations, ensuring analysis focuses on robust populations rather
+  than potential artifacts or noise
+
+6. Finalization & Saving
+
+
+- Fix mixed data types in ``obs`` (converting objects/NaNs to
+  strings/categories) for H5AD stability
+- Save the merged, annotated, and cleaned object to
+  ``00_tonsil_blood_DISCO_merged.h5ad``
+
+
+
+═══════════════════════════════════════════════════════════════
+
+
+01_Preprocessing
+----------------
+
+.. toctree::
+   :caption: 01_Preprocessing
+   :hidden:
+
+   notebooks/01_Preprocessing
+
+Single-Cell RNA-seq Preprocessing and QC Pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SUMMARY
+"""""""
+
+1. Initialize environment and load merged single-cell AnnData object
+2. Configure analysis parameters and define marker sets of interest
+3. Perform biological pre-filtering (Erythrocytes & Secreting cells)
+4. Execute iterative QC refinement for Cells (``obs``) and Genes
+   (``var``)
+5. Visualize QC metrics stratified by study metadata
+6. Apply filtering, clean metadata, and save preprocessed object
+
+1. Environment & Data Loading
+
+
+- Load libraries and configure GPU/threading settings
+- Load the merged raw database (``00_tonsil_blood_DISCO_merged.h5ad``)
+- Define plotting parameters (``rcParams``) for high-quality figures
+
+2. Configuration & Marker Setup
+
+
+- Initialize ``adata.uns["config"]`` via ``sc_code.setup_adata`` to
+  centralize parameters
+- Define specific immune marker lists (T cells, B cells, NK, Myeloid)
+  for downstream validation
+- Set experiment-specific metadata (organism, dataset name, save paths)
+
+3. Biological Heuristic Filtering
+
+
+- Set initial broad QC thresholds for mitochondrial content and counts
+- Subset data to remove likely misannotated cell types based on
+  biological logic:
+
+  - Remove Erythrocytes (Hb genes)
+  - Remove specific Secreting cells based on fine-grained labels and
+    protein coding percentage
+
+4. Stratified QC Visualization
+
+
+- Generate violin plots to identify outliers across different metadata
+  levels:
+
+  - **Sample Type** (Disease/Condition)
+  - **Study Category** (Database/Source)
+  - **Platform** (Assay protocol)
+
+- Customize ``keys_for_qc`` to focus on specific metrics (e.g.,
+  ``pct_HK_gtex``, ``pct_MT``)
+
+5. Cell-Level (Obs) QC Refinement
+
+
+- Iteratively visualize upper and lower distributions of QC metrics
+- Refine filtering thresholds for:
+
+  - **Upper bounds:** Doublets/outliers (Max genes, Max counts, Max MT%)
+  - **Lower bounds:** Low-quality cells (Min genes, Min counts, Min
+    unique, Min RBS%)
+
+- Tag cells using ``sc_code.all_filters_tagging``
+
+6. Gene-Level (Var) QC Refinement
+
+
+- Calculate highly variable genes and bin rankings
+- Visualize gene metrics to determine expression cutoffs
+- Refine thresholds for minimum counts and cell prevalence to reduce
+  noise
+
+7. Object Cleaning & Finalization
+
+
+- Apply boolean masks to physically subset the AnnData object
+  (``good_quality``)
+- Remove specific poor-quality clinical samples (e.g., specific tonsil
+  surgeries)
+- Configure ``sample_n_condition_keys`` for downstream density plotting
+- Print dataset statistics (cell counts, crosstabs) and execution time
+
+8. Saving
+
+
+- Save the fully preprocessed and filtered AnnData object to ``.h5ad``
+  (``01_tonsil_blood_DISCO_preprocessed.h5ad``) with compression
+
+
+
+═══════════════════════════════════════════════════════════════
+
+
+02_clustering_preprocessing_and_GSE
+-----------------------------------
+
+.. toctree::
+   :caption: 02_clustering_preprocessing_and_GSE
+   :hidden:
+
+   notebooks/02_clustering_preprocessing_and_GSE
+
+Single-Cell Gene Set Enrichment & Marker Selection Pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SUMMARY
+"""""""
+
+1. Load the preprocessed AnnData object and configure computing
+   resources.
+2. Remove specific gene families (MT, RBS, hemoglobin) to improve
+   clustering signal.
+3. Execute normalization, log-transformation, and scaling.
+4. Iteratively query a combined reference database (PanglaoDB,
+   CellMarker, etc.) to curate cell-type specific gene signatures.
+5. Run Over-Representation Analysis (ORA) using ``decoupler`` to score
+   cell identity probabilities.
+6. Benchmarking selected marker sets against the global database using
+   Jaccard Similarity indices.
+7. Generate dual-axis plots comparing marker set similarity and size to
+   ensure robustness.
+
+1. Gene Filtering & Preprocessing
+
+
+- **Configuration:** Access
+  ``adata.uns["config"]["qc"]["gene_identifiers"]`` to define gene sets.
+- **Exclusion Criteria:** Remove genes related to:
+
+  - **Energy/Stress:** Mitochondrial (``MT``) and Ribosomal (``RBS``)
+    genes (often drive technical batch effects).
+  - **Artifacts:** Hemoglobin (``HG``) and Pseudogenes.
+
+- **Execution:** Run ``sc_code.Run_all_prep_steps_clustering`` to
+  normalize, log-transform, and scale the data (results stored in
+  ``adata.X``).
+
+2. Curated Marker Selection
+
+
+- **Database Loading:** Load a massive ``combined_database`` containing
+  markers from multiple public repositories.
+- **Iterative Querying:** Use ``sc_utils.search_database`` to find
+  markers for specific lineages:
+
+  - **Immune:** T cells, B cells, NK cells, Macrophages, Dendritic
+    cells, Plasma cells.
+  - **Structural:** Endothelial cells.
+  - **States:** Activated vs. Exhausted phenotypes.
+
+- **Scoring:** Use
+  ``sc_utils.get_element_and_counts_with_positional_sum`` to rank genes
+  based on frequency and specificity across databases.
+- **Storage:** Compile selected top :math:`N` genes (default 20) into
+  ``adata.uns["genesets"]["cell_type_markers"]``.
+
+3. Decoupler ORA Scoring
+
+
+- **Layer Switching:** Switch ``adata.X`` to ``log2norm_counts`` (ORA
+  requires normalized, non-negative data, not scaled Z-scores).
+- **Enrichment:** Run ``sc_code.run_decoupler`` using the curated
+  ``gse_marker_dict``.
+- **Cleanup:** Reset ``adata.X = None`` to optimize memory usage
+  (removing the dense scaled matrix).
+- **Save:** Export intermediate object to
+  ``02_tonsil_blood_DISCO_clustering_preprocessed.h5ad``.
+
+4. Validation: Jaccard Similarity Benchmarking
+
+
+- **Objective:** Validate that the selected marker sets are
+  representative and distinct compared to the rest of the database.
+- **Metric:** Calculate **Jaccard Index** (Intersection over Union)
+  between:
+
+  1. **Our Method vs. Rest:** How similar our selected markers are to
+     the remaining database entries.
+  2. **Refined Groups:** Internal consistency within the database.
+
+- **Logic:**
+
+  - Computes overlap counts, removed genes, and kept genes.
+  - Identifies if the selected markers capture the core identity of the
+    cell type better than random database subsets.
+
+5. Validation Visualization
+
+
+- **Plotting:** Generate complex bar plots for each cell type.
+
+  - **Primary Axis:** Jaccard Similarity score (Bar).
+  - **Secondary Axis:** Gene Set Size (Line).
+
+- **Interpretation:** Compares “Our Method” against the top 200 similar
+  gene sets to visualize performance ranking.
+- **Export:** Saves high-resolution PDFs to ``../Figures/barplots``.
+
+
+
+═══════════════════════════════════════════════════════════════
+
+
+03_search_for_clustering_parameters
+-----------------------------------
+
+.. toctree::
+   :caption: 03_search_for_clustering_parameters
+   :hidden:
+
+   notebooks/03_search_for_clustering_parameters
+
+Single-Cell Clustering & Dimensionality Reduction Pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SUMMARY
+"""""""
+
+1. Initialize environment and load the preprocessed AnnData object
+2. Perform Principal Component Analysis (PCA) and determine optimal
+   components
+3. Calculate cell-type activity scores (ORA) for UMAP evaluation
+4. Execute grid search for UMAP hyperparameters (``n_neighbors``,
+   ``min_dist``)
+5. Optimize Leiden clustering resolution for broad cell type definition
+6. Finalize neighborhood graph and embeddings based on selected
+   parameters
+7. Validate clustering via Jaccard similarity, QC metrics, and marker
+   gene plots
+8. Save the final clustered object
+
+1. Environment & Data Loading
+
+
+- Load ``scToolkit`` and other libraries
+- Load ``02_tonsil_blood_DISCO_clustering_preprocessed.h5ad``
+- **Note on Determinism:** Acknowledge that GPU-accelerated methods
+  (UMAP) are non-deterministic; parameters must be saved, or embeddings
+  explicitly stored to ensure reproducibility.
+
+2. PCA & Variance Analysis
+
+
+- **Data Prep:** Set ``adata.X`` to the ``scaled`` layer (Z-scores) for
+  PCA.
+- **Execution:** Run PCA via ``sc_code.cluster_SC_scanpy_like``.
+- **Component Selection:** Use
+  ``sc_code.collect_n_pcs_for_variance_sums`` to find the number of PCs
+  explaining 85–99% variance.
+
+3. Pre-computation for Evaluation
+
+
+- **Objective:** Generate labels to evaluate UMAP separation during
+  hyperparameter tuning.
+- **Method:** Use ``sc_utils.add_cell_type_idxmax_from_significant``
+  with ``method="ora"`` (Over-Representation Analysis).
+- **Result:** Create ``cell_type_estimation_idxmax_ora`` in ``obs`` to
+  color-code cells by their predicted identity (e.g., T cells, B cells)
+  based on marker enrichment.
+
+4. UMAP Hyperparameter Tuning
+
+
+- **Grid Search:** Run ``sc_code.search_for_neighbor_params`` to test
+  combinations of:
+
+  - ``n_pcs``: [4, 14, 24]
+  - ``n_neighbors``: [15, 25, 50, 75]
+  - ``min_dist``: [0.2, 0.3, 0.5]
+
+- **Evaluation Criteria:**
+
+  - **Batch Effect:** Do samples from different studies overlap?
+  - **Biological Structure:** Do known cell types (from ORA scores)
+    cluster logically without artificial fragmentation?
+
+- **Selection:** Optimal parameters identified as **``n_pcs=4``,
+  ``n_neighbors=50``, ``min_dist=0.3``** for our use case.
+
+5. Leiden Resolution Search
+
+
+- **Grid Search:** Use ``sc_code.search_for_leiden_resolution`` to test
+  resolutions between 0.01 and 0.02.
+- **Objective:** Find a resolution that yields a stable number of
+  clusters corresponding to major lineages (immune vs. granulocytes).
+- **Selection:** **Resolution 0.012** selected for broad clustering.
+
+6. Final Graph Construction
+
+
+- **Parameter Application:** Update ``adata.uns["config"]`` with the
+  chosen values.
+- **Re-run:** Execute ``sc_code.cluster_SC_scanpy_like`` with
+  ``run_neighbors=True`` to build the deterministic neighborhood graph
+  using the optimized parameters.
+- **Embedding Storage:** Overwrite ``adata.obsm["X_umap"]`` and
+  ``adata.obs["leiden"]`` with the best results from the search
+  dictionaries to ensure the visual output matches the selected
+  parameters.
+
+7. Validation & Visualization
+
+
+- **Density Plots:** Visualize distribution of ``tissue`` and
+  ``sample_type`` to confirm lack of batch effects.
+- **Jaccard Similarity:** Plot a heatmap comparing ``ct_broad`` (ground
+  truth/reference) vs. ``cell_type_estimation_idxmax_ora`` to validate
+  cluster identities.
+- **Marker Genes:** Plot UMAPs for canonical markers (e.g., *MS4A1*,
+  *CD3D*, *ITGAX*) to biologically verify cluster identities.
+
+8. Saving
+
+
+- Save the fully clustered and annotated object to
+  ``03_tonsil_blood_DISCO_clustered.h5ad``.
+
+
+
+═══════════════════════════════════════════════════════════════
+
+
+04_downstream
+-------------
+
+.. toctree::
+   :caption: 04_downstream
+   :hidden:
+
+   notebooks/04_downstream
+
+Single-Cell RNA-seq DEG Analysis and Visualization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SUMMARY
+"""""""
+
+1. Load and preprocess single-cell AnnData objects for DEG analysis
+2. Perform DEG calculations with internal and external references
+3. Visualize DEGs using heatmaps, dotplots, split dotplots, violins, and
+   UMAPs
+
+   - Cluster annotation - per leiden cluster degs
+   - Condition-level analysis - Within one cluster condition degs
+
+4. Configure automated downstream plotting and export results
+
+1. Data Loading
+
+
+- Load clustered single-cell ``.h5ad`` file into AnnData object
+- Configure matplotlib display settings
+
+2. Preprocessing & Log Transformation
+
+
+- Create unbiased ``log2_count`` layer to avoid normalization
+  distortions
+- Run downstream preprocessing with gene set references
+
+3. DEG Calculation
+
+
+- Compute DEGs across clusters with hierarchical clustering
+- Excursus: compare DEGs against global external references for
+  robustness
+
+4. Hallmark & Heatmap Analysis
+
+
+- Generate hallmark heatmaps to summarize cluster-specific pathways
+
+5. Condition-Specific DEG Analysis
+
+
+- Run flexible DEG comparisons across clusters and conditions
+- Support for explicit group–reference pairs or automated sweeps
+
+6. Split Dotplots
+
+
+- Visualize gene expression split by conditions within clusters
+- Explore scaling, normalization, and DEG-only subsetting for clarity
+
+7. Dotplot Enhancements
+
+
+- Support hierarchical grouping of marker sets
+- Handle overlapping groups and unique gene identifiers
+
+8. Validation & Comparisons
+
+
+- Compare marginal expression differences for candidate genes
+- Explore violin plots and UMAP side-by-side for condition effects
+
+9. Automated Downstream Configuration
+
+
+- Configure heatmaps, violins, dotplots, gradients via
+  ``adata.uns["config"]``
+- Enable categorical density plots for selected ``obs`` keys
+
+10. Saving & Reporting
+
+
+- Run ``sc_code.run_downstream`` for automated plots/CSVs
+- Save processed AnnData with DEG results
+
+
+
+═══════════════════════════════════════════════════════════════
+
