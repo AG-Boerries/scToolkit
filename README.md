@@ -1,11 +1,11 @@
-# Scanpy Toolkit
+# scToolkit
 
 ## Disclaimer
 
 **scToolkit** is an independent project and is **not affiliated with, endorsed by, or part of the Scanpy project** or the scverse ecosystem.  
 This toolkit provides a collection of convenience and helper functions that operate **on top of Scanpy**, but it does **not** replace or modify Scanpy itself.
 
-To use scToolkit, you must have **Scanpy installed separately**.  
+To use scToolkit, you must have **Scanpy installed separately** (following the [installation](##Installation)).  
 All references to “Scanpy” in this repository are solely for the purpose of describing compatibility and required dependencies.
 
 scToolkit does **not** claim ownership of, is not derived from, and does not promote itself as an alternative or extension officially associated with the Scanpy project.  
@@ -98,7 +98,7 @@ Python, we provide wrappers (e.g sc_utils.convert_orthologs).
    GIT_DIR="/absolute/path/to/git/folder/"
    ENV_PATH="/absolute/path/to/env"
    # #######
-   KERNEL_NAME="proximap_r_stable"
+   KERNEL_NAME="scToolkit_r_stable"
    ENV_YML="env_r.yml"
    # ######################
    # EXECUTION
