@@ -73,7 +73,7 @@ If it is not available anymore, please try a similar version.
 > conda config --env --set subdir osx-64
 > ```
 
-2. Install Scanpy-Api
+2. Install scToolkit
    ```bash
    # Install the local package
    cd "$GIT_DIR" || { echo "Failed to cd to $GIT_DIR"; exit 1; }
