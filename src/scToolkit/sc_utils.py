@@ -2631,8 +2631,8 @@ def get_n_unique(
             calc_score: bool = False
         ) -> None:
     """
-    Calculate the number of unique values for non-sparse data and optionally
-    compute a unique score.
+    Calculate the number of unique non-zero count values from a sparse AnnData
+    matrix and optionally compute a unique score.
 
     NOTE:
         This function converts the counts to integers, so it should be run on

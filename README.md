@@ -17,6 +17,8 @@ The name “Scanpy” is used strictly in a descriptive manner under fair-use te
 This version is only tested with https://github.com/conda-forge/miniforge/releases/download/23.3.1-0/Miniforge3-23.3.1-0-Linux-aarch64.sh
 If it is not available anymore, please try a similar version.
 
+The scToolkit has been tested on macOS and linux-based HPC. It has not yet been tested on Windows.
+
 > GENERAL NOTE: Make sure to replace the paths properly, if it has a '/' in the end it must be there.
 > And also if absolute is in the dummy paht, use the absolut path!
 0. Install mamba (conda)
@@ -136,6 +138,21 @@ Please check the documentation in [docs](docs/html/index.html)
 
 ## Citation
 Manuscript in prep.
+
+## Troubleshooting
+
+
+We recommend installing **scToolkit** in a clean Conda or Mamba environment following the provided instructions to minimize dependency conflicts arising from pre-existing packages or cached installations. If installation issues persist, we recommend clearing the package manager cache and reinstalling **scToolkit** in a fresh environment.
+
+On some HPC clusters, SLURM may use different formats for the `SLURM_JOB_CPUS_PER_NODE` environment variable, which can cause errors when loading packages in notebooks. If you encounter such issues, we recommend setting this variable manually before running the notebook:
+
+```python
+import os
+os.environ["SLURM_JOB_CPUS_PER_NODE"] = "8"
+```
+
+
+
 
 ## References
 - For the docu We used the tempalte from: 
